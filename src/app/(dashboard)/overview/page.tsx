@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server"
 import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale } from "lucide-react"
 import { redirect } from "next/navigation"
 import { OverviewChart } from "@/components/overview-chart"
+import { CategoryChart } from "@/components/category-chart"
 import { formatCurrency } from "@/lib/utils"
 
 // Helper function to get start and end of a month
@@ -36,28 +37,36 @@ export default async function OverviewPage() {
   }
 
   const now = new Date();
-  const lastMonthDate = new Date();
-  lastMonthDate.setMonth(now.getMonth() - 1);
-
   const currentMonthRange = getMonthDateRange(now);
-  const lastMonthRange = getMonthDateRange(lastMonthDate);
-
-  const { data: transactions, error } = await supabase
+  
+  const { data: currentMonthTransactions, error: currentMonthError } = await supabase
       .from('transactions')
-      .select('amount, type, date')
+      .select('amount, type, date, categories ( name )')
       .eq('user_id', user.id)
-      .gte('date', lastMonthRange.start)
+      .gte('date', currentMonthRange.start)
       .lte('date', currentMonthRange.end)
       .order('date', { ascending: true });
 
-  if (error) {
-      console.error("Error fetching transactions:", error);
-      // You can return a dedicated error component here
+  if (currentMonthError) {
+      console.error("Error fetching current month transactions:", currentMonthError);
       return <div>Error loading data.</div>
   }
+
+  const lastMonthDate = new Date();
+  lastMonthDate.setMonth(now.getMonth() - 1);
+  const lastMonthRange = getMonthDateRange(lastMonthDate);
+
+  const { data: lastMonthTransactions, error: lastMonthError } = await supabase
+      .from('transactions')
+      .select('amount, type')
+      .eq('user_id', user.id)
+      .gte('date', lastMonthRange.start)
+      .lte('date', lastMonthRange.end);
   
-  const currentMonthTransactions = transactions?.filter(t => new Date(t.date) >= new Date(currentMonthRange.start)) || [];
-  const lastMonthTransactions = transactions?.filter(t => new Date(t.date) < new Date(currentMonthRange.start)) || [];
+  if (lastMonthError) {
+      console.error("Error fetching last month transactions:", lastMonthError);
+      return <div>Error loading data.</div>
+  }
 
   const calculateTotals = (trans: { amount: number; type: string; }[]) => {
       return trans.reduce((acc, t) => {
@@ -70,8 +79,8 @@ export default async function OverviewPage() {
       }, { income: 0, expense: 0 });
   };
 
-  const currentTotals = calculateTotals(currentMonthTransactions);
-  const lastMonthTotals = calculateTotals(lastMonthTransactions);
+  const currentTotals = calculateTotals(currentMonthTransactions || []);
+  const lastMonthTotals = calculateTotals(lastMonthTransactions || []);
 
   const incomePercentageChange =
       lastMonthTotals.income > 0
@@ -105,7 +114,7 @@ export default async function OverviewPage() {
     );
   };
 
-  // Prepare data for the chart
+  // Prepare data for the overview chart
   const dailyData = new Map<string, { income: number; expense: number }>();
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
@@ -115,7 +124,7 @@ export default async function OverviewPage() {
     dailyData.set(formattedDate, { income: 0, expense: 0 });
   }
 
-  currentMonthTransactions.forEach(t => {
+  (currentMonthTransactions || []).forEach(t => {
       const transactionDate = new Date(t.date);
       const formattedDate = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       const dayEntry = dailyData.get(formattedDate);
@@ -129,11 +138,27 @@ export default async function OverviewPage() {
       }
   });
 
-  const chartData = Array.from(dailyData.entries()).map(([date, { income, expense }]) => ({
+  const overviewChartData = Array.from(dailyData.entries()).map(([date, { income, expense }]) => ({
       date,
       income,
       expense
   }));
+
+  // Prepare data for the category chart
+  const expenseTransactions = (currentMonthTransactions || []).filter(t => t.type === 'expense');
+  const categoryExpensesMap = new Map<string, number>();
+
+  expenseTransactions.forEach(t => {
+      const categoryName = t.categories?.name || 'Uncategorized';
+      const currentTotal = categoryExpensesMap.get(categoryName) || 0;
+      categoryExpensesMap.set(categoryName, currentTotal + t.amount);
+  });
+
+  const categoryChartData = Array.from(categoryExpensesMap.entries()).map(([category, total]) => ({
+      category,
+      total,
+  })).sort((a, b) => b.total - a.total);
+
 
   return (
     <div className="flex flex-col h-full gap-4">
@@ -179,7 +204,7 @@ export default async function OverviewPage() {
       {/* Bottom Row: Charts & Other Info */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Main Chart */}
-        <OverviewChart data={chartData} />
+        <OverviewChart data={overviewChartData} />
         
         {/* Side Cards */}
         <div className="flex flex-col col-span-1 gap-4">
@@ -201,16 +226,7 @@ export default async function OverviewPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="flex flex-col flex-1">
-            <CardHeader>
-              <CardTitle>Expenses by Category</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center flex-1">
-               <div data-ai-hint="pie chart" className="flex items-center justify-center w-full h-full rounded-lg bg-muted/50">
-                 <p className="text-sm text-muted-foreground">Chart coming soon</p>
-               </div>
-            </CardContent>
-          </Card>
+          <CategoryChart data={categoryChartData} />
         </div>
       </div>
     </div>
