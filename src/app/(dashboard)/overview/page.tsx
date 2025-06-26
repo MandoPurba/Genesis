@@ -250,7 +250,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <Scale className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(netBalance)}</div>
+            <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {formatCurrency(netBalance)}
+            </div>
             <p className="text-xs text-muted-foreground">This month's standing.</p>
           </CardContent>
         </Card>
