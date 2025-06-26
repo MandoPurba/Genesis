@@ -65,7 +65,7 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
           Add Transaction
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col">
+      <SheetContent className="flex flex-col sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Add a New Transaction</SheetTitle>
           <SheetDescription>
