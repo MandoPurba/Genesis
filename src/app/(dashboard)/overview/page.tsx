@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server"
 import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale } from "lucide-react"
 import { redirect } from "next/navigation"
 import { OverviewChart } from "@/components/overview-chart"
-import { CategoryChart } from "@/components/category-chart"
+import { RecentTransactions } from "@/components/recent-transactions"
 import { formatCurrency } from "@/lib/utils"
 
 // Helper function to get start and end of a month
@@ -66,6 +66,17 @@ export default async function OverviewPage() {
   if (lastMonthError) {
       console.error("Error fetching last month transactions:", lastMonthError);
       return <div>Error loading data.</div>
+  }
+
+  const { data: recentTransactions, error: recentTransactionsError } = await supabase
+    .from('transactions')
+    .select('id, date, type, amount, description, categories ( name )')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false })
+    .limit(5);
+
+  if (recentTransactionsError) {
+      console.error("Error fetching recent transactions:", recentTransactionsError);
   }
 
   const calculateTotals = (trans: { amount: number; type: string; }[]) => {
@@ -144,22 +155,6 @@ export default async function OverviewPage() {
       expense
   }));
 
-  // Prepare data for the category chart
-  const expenseTransactions = (currentMonthTransactions || []).filter(t => t.type === 'expense');
-  const categoryExpensesMap = new Map<string, number>();
-
-  expenseTransactions.forEach(t => {
-      const categoryName = t.categories?.name || 'Uncategorized';
-      const currentTotal = categoryExpensesMap.get(categoryName) || 0;
-      categoryExpensesMap.set(categoryName, currentTotal + t.amount);
-  });
-
-  const categoryChartData = Array.from(categoryExpensesMap.entries()).map(([category, total]) => ({
-      category,
-      total,
-  })).sort((a, b) => b.total - a.total);
-
-
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Top Row: Stat Cards */}
@@ -206,28 +201,8 @@ export default async function OverviewPage() {
         {/* Main Chart */}
         <OverviewChart data={overviewChartData} />
         
-        {/* Side Cards */}
-        <div className="flex flex-col col-span-1 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget Utilization</CardTitle>
-              <CardDescription>Monthly spending vs budget</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="relative mx-auto w-32 h-32">
-                  <svg className="w-full h-full" viewBox="0 0 36 36" transform="rotate(-90 18 18)">
-                      <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" className="stroke-current text-secondary" strokeWidth="4" fill="none" />
-                      <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831" className="stroke-current text-primary" strokeWidth="4" fill="none" strokeDasharray="65, 100" strokeLinecap="round" />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-bold">65%</span>
-                      <span className="text-xs text-muted-foreground">Used</span>
-                  </div>
-              </div>
-            </CardContent>
-          </Card>
-          <CategoryChart data={categoryChartData} />
-        </div>
+        {/* Recent Transactions */}
+        <RecentTransactions transactions={recentTransactions || []} />
       </div>
     </div>
   )
