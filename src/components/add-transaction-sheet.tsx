@@ -20,10 +20,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/datepicker"
 import { useToast } from "@/hooks/use-toast"
-import { PlusCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { PlusCircle, AlertCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
-type Category = { id: string; name: string; type: 'income' | 'expense' }
+type Category = { id: number; name: string; type: 'income' | 'expense' }
+type BudgetInfo = { [categoryId: number]: { budget: number; spent: number; } }
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -34,7 +36,7 @@ function SubmitButton() {
   )
 }
 
-export function AddTransactionSheet({ categories }: { categories: Category[] }) {
+export function AddTransactionSheet({ categories, budgetInfo }: { categories: Category[]; budgetInfo: BudgetInfo }) {
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addTransaction, null)
@@ -43,6 +45,8 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [amountValue, setAmountValue] = useState('')
   const [key, setKey] = useState(Date.now()); // Used to reset form
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>()
+  const [overBudgetWarning, setOverBudgetWarning] = useState<string | null>(null)
 
   const filteredCategories = categories.filter(c => c.type === transactionType)
 
@@ -54,11 +58,42 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
       setDate(new Date())
       setTransactionType('expense')
       setAmountValue('')
+      setSelectedCategoryId(undefined)
+      setOverBudgetWarning(null)
       setKey(Date.now())
     } else if (state?.error) {
       toast({ title: "Error", description: state.error, variant: "destructive" })
     }
   }, [state, toast])
+
+  useEffect(() => {
+    // Reset selected category when type changes
+    setSelectedCategoryId(undefined)
+  }, [transactionType])
+
+  useEffect(() => {
+    if (transactionType === 'expense' && selectedCategoryId && amountValue) {
+      const categoryIdNum = Number(selectedCategoryId)
+      const budgetDetails = budgetInfo[categoryIdNum]
+      const newAmount = Number(amountValue) || 0
+
+      if (budgetDetails) {
+        const { budget, spent } = budgetDetails
+        const potentialRemaining = budget - spent - newAmount
+
+        if (potentialRemaining < 0) {
+          const overage = formatCurrency(Math.abs(potentialRemaining))
+          setOverBudgetWarning(`This transaction will exceed your budget for this category by ${overage}.`)
+        } else {
+          setOverBudgetWarning(null)
+        }
+      } else {
+        setOverBudgetWarning(null)
+      }
+    } else {
+      setOverBudgetWarning(null)
+    }
+  }, [selectedCategoryId, amountValue, transactionType, budgetInfo])
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -125,13 +160,18 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
 
             <div>
               <Label htmlFor="categoryId">Category</Label>
-              <Select name="categoryId" required>
+              <Select 
+                name="categoryId" 
+                required
+                value={selectedCategoryId}
+                onValueChange={setSelectedCategoryId}
+              >
                 <SelectTrigger id="categoryId">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCategories.map(category => (
-                    <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                    <SelectItem key={category.id} value={category.id.toString()}>{category.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -143,6 +183,15 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
               <Textarea id="description" name="description" placeholder="e.g., Groceries from the market" />
               {state?.errors?.description && <p className="text-destructive text-sm mt-1">{state.errors.description[0]}</p>}
             </div>
+
+            {overBudgetWarning && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Budget Warning</AlertTitle>
+                <AlertDescription>{overBudgetWarning}</AlertDescription>
+              </Alert>
+            )}
+
           </div>
           <SheetFooter className="mt-auto pt-4 border-t">
             <SubmitButton />

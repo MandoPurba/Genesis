@@ -7,7 +7,7 @@ const TransactionFormSchema = z.object({
   type: z.enum(['income', 'expense']),
   amount: z.coerce.number().positive({ message: "Amount must be greater than 0." }),
   date: z.coerce.date(),
-  categoryId: z.string({ required_error: "Please select a category." }).uuid(),
+  categoryId: z.coerce.number({ required_error: "Please select a category." }),
   description: z.string().max(100, "Description is too long.").optional(),
 });
 
@@ -48,6 +48,7 @@ export async function addTransaction(prevState: any, formData: FormData) {
 
   revalidatePath('/transactions')
   revalidatePath('/overview')
+  revalidatePath('/budgets')
   return { success: 'Transaction added successfully!' }
 }
 

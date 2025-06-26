@@ -65,7 +65,7 @@ export function AddBudgetSheet({ categories }: { categories: Category[] }) {
           Add Budget
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col sm:max-w-md">
+      <SheetContent className="flex flex-col sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Set a New Budget</SheetTitle>
           <SheetDescription>
