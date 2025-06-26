@@ -1,37 +1,55 @@
--- This script provides seed data for the application.
--- You can run this file in your Supabase SQL Editor.
+-- For this script to work, make sure you have a `accounts`, `budgets`, and `transactions` table.
+-- The script is idempotent and can be run multiple times.
 
--- NOTE: Ensure you have created the 'accounts', 'budgets', and 'transactions' tables
--- with appropriate columns and RLS policies before running this script.
+-- Clear existing data to avoid duplicates on re-running
+TRUNCATE TABLE transactions, budgets, accounts RESTART IDENTITY;
 
--- Seed Accounts
--- We are defining UUIDs for accounts so we can reference them in transactions.
-INSERT INTO accounts (id, user_id, name, type, balance, currency)
-VALUES 
-('f47ac10b-58cc-4372-a567-0e02b2c3d479', 'ba215643-9da9-47f9-a510-4e2cc847e9c4', 'BCA Tahapan', 'checking', 25000000, 'IDR'),
-('74b8a7c6-51a0-4a8a-9c7b-3b6e8a4f9a0d', 'ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Gopay', 'ewallet', 750000, 'IDR');
-
--- Seed Budgets
--- Budgets for the current month.
-INSERT INTO budgets (user_id, category, amount, "month")
+-- Note: Replace 'ba215643-9da9-47f9-a510-4e2cc847e9c4' with the actual user_id from your auth.users table if needed.
+-- This ID was provided by the user.
+-- Insert into accounts and capture their IDs using CTEs (Common Table Expressions)
+WITH new_accounts AS (
+  INSERT INTO accounts (user_id, name, type, balance, currency)
+  VALUES
+    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'BCA Tahapan', 'checking', 15500000.00, 'IDR'),
+    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Mandiri Tabungan', 'savings', 50000000.00, 'IDR'),
+    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'GoPay Wallet', 'e-wallet', 750000.00, 'IDR')
+  RETURNING id, name
+),
+bca_id AS (
+  SELECT id FROM new_accounts WHERE name = 'BCA Tahapan'
+),
+mandiri_id AS (
+  SELECT id FROM new_accounts WHERE name = 'Mandiri Tabungan'
+),
+gopay_id AS (
+  SELECT id FROM new_accounts WHERE name = 'GoPay Wallet'
+)
+-- Insert transactions for the current month
+INSERT INTO transactions (user_id, account_id, description, amount, type, category, date)
 VALUES
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Food & Dining', 2000000, date_trunc('month', current_date)),
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Transportation', 500000, date_trunc('month', current_date)),
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Shopping', 1500000, date_trunc('month', current_date)),
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Entertainment', 750000, date_trunc('month', current_date));
+  -- Current Month Income
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Gaji Bulanan', 8500000.00, 'income', 'Salary', NOW() - INTERVAL '5 days'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM mandiri_id), 'Proyek Desain Logo', 2500000.00, 'income', 'Freelance', NOW() - INTERVAL '10 days'),
+  
+  -- Current Month Expenses
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Sewa Apartemen', 3000000.00, 'expense', 'Housing', NOW() - INTERVAL '4 days'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM gopay_id), 'Makan Siang (Warung Padang)', 75000.00, 'expense', 'Food', NOW() - INTERVAL '3 days'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Tagihan Listrik & Air', 450000.00, 'expense', 'Utilities', NOW() - INTERVAL '2 days'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM gopay_id), 'Transportasi (Gojek)', 50000.00, 'expense', 'Transport', NOW() - INTERVAL '1 day'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM mandiri_id), 'Belanja Bulanan (Supermarket)', 1200000.00, 'expense', 'Groceries', NOW() - INTERVAL '12 days'),
 
--- Seed Transactions
--- A mix of income and expenses for the current month.
--- Note: Expenses are represented with negative amounts.
-INSERT INTO transactions (user_id, account_id, description, amount, category, type, date)
+  -- Last Month Income (for percentage comparison)
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Gaji Bulan Lalu', 8000000.00, 'income', 'Salary', NOW() - INTERVAL '1 month' - INTERVAL '5 days'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM mandiri_id), 'Bonus Kinerja', 1000000.00, 'income', 'Bonus', NOW() - INTERVAL '1 month' - INTERVAL '15 days'),
+  
+  -- Last Month Expenses (for percentage comparison)
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Sewa Apartemen Bulan Lalu', 3000000.00, 'expense', 'Housing', NOW() - INTERVAL '1 month' - INTERVAL '4 days'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM gopay_id), 'Tiket Konser', 500000.00, 'expense', 'Entertainment', NOW() - INTERVAL '1 month' - INTERVAL '20 days');
+
+-- Insert budgets
+INSERT INTO budgets (user_id, name, amount, category)
 VALUES
--- Income
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'Gaji Bulanan', 30000000, 'Salary', 'income', current_date - interval '5 days'),
--- Expenses from BCA
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'Makan siang kantor', -75000, 'Food & Dining', 'expense', current_date - interval '4 days'),
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'Belanja Bulanan', -1200000, 'Groceries', 'expense', current_date - interval '3 days'),
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'Tagihan Listrik', -550000, 'Utilities', 'expense', current_date - interval '2 days'),
--- Expenses from Gopay
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', '74b8a7c6-51a0-4a8a-9c7b-3b6e8a4f9a0d', 'Kopi Pagi', -25000, 'Food & Dining', 'expense', current_date - interval '4 days'),
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', '74b8a7c6-51a0-4a8a-9c7b-3b6e8a4f9a0d', 'Ojek Online', -15000, 'Transportation', 'expense', current_date - interval '3 days'),
-('ba215643-9da9-47f9-a510-4e2cc847e9c4', '74b8a7c6-51a0-4a8a-9c7b-3b6e8a4f9a0d', 'Nonton Bioskop', -100000, 'Entertainment', 'expense', current_date - interval '1 day');
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Makanan & Minuman', 2000000.00, 'Food'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Transportasi', 500000.00, 'Transport'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Hiburan', 750000.00, 'Entertainment'),
+  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Kebutuhan Rumah', 2000000.00, 'Groceries');

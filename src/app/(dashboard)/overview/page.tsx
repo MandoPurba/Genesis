@@ -5,9 +5,114 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { createClient } from "@/lib/supabase/server"
 import { TrendingUp, TrendingDown, DollarSign, Wallet, Activity, BarChart, Scale } from "lucide-react"
+import { redirect } from "next/navigation"
 
-export default function OverviewPage() {
+// Helper function to format currency
+const formatCurrency = (amount: number | null) => {
+  if (amount === null || isNaN(amount)) return "Rp 0";
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+// Helper function to get start and end of a month
+const getMonthDateRange = (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1, 0, 0, 0, 0);
+    const lastDay = new Date(year, month + 1, 0, 23, 59, 59, 999);
+    return {
+        start: firstDay.toUTCString(),
+        end: lastDay.toUTCString(),
+    };
+};
+
+
+export default async function OverviewPage() {
+  const supabase = createClient();
+  if (!supabase) {
+    return <div>Supabase not configured.</div>;
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+      redirect('/login');
+  }
+
+  const now = new Date();
+  const lastMonthDate = new Date();
+  lastMonthDate.setMonth(now.getMonth() - 1);
+
+  const currentMonthRange = getMonthDateRange(now);
+  const lastMonthRange = getMonthDateRange(lastMonthDate);
+
+  const { data: transactions, error } = await supabase
+      .from('transactions')
+      .select('amount, type, date')
+      .eq('user_id', user.id)
+      .gte('date', lastMonthRange.start)
+      .lte('date', currentMonthRange.end);
+
+  if (error) {
+      console.error("Error fetching transactions:", error);
+      // You can return a dedicated error component here
+      return <div>Error loading data.</div>
+  }
+  
+  const currentMonthTransactions = transactions?.filter(t => new Date(t.date) >= new Date(currentMonthRange.start)) || [];
+  const lastMonthTransactions = transactions?.filter(t => new Date(t.date) < new Date(currentMonthRange.start)) || [];
+
+  const calculateTotals = (trans: { amount: number; type: string; }[]) => {
+      return trans.reduce((acc, t) => {
+          if (t.type === 'income') {
+              acc.income += t.amount;
+          } else if (t.type === 'expense') {
+              acc.expense += t.amount;
+          }
+          return acc;
+      }, { income: 0, expense: 0 });
+  };
+
+  const currentTotals = calculateTotals(currentMonthTransactions);
+  const lastMonthTotals = calculateTotals(lastMonthTransactions);
+
+  const incomePercentageChange =
+      lastMonthTotals.income > 0
+          ? ((currentTotals.income - lastMonthTotals.income) / lastMonthTotals.income) * 100
+          : currentTotals.income > 0 ? Infinity : 0;
+
+  const expensePercentageChange =
+      lastMonthTotals.expense > 0
+          ? ((currentTotals.expense - lastMonthTotals.expense) / lastMonthTotals.expense) * 100
+          : currentTotals.expense > 0 ? Infinity : 0;
+
+  const netBalance = currentTotals.income - currentTotals.expense;
+
+  const renderPercentageChange = (change: number, positiveIsGood: boolean) => {
+    if (!isFinite(change)) {
+        return <p className="text-xs text-muted-foreground">No data last month</p>;
+    }
+
+    const isPositive = change >= 0;
+    const colorClass = positiveIsGood
+        ? (isPositive ? 'text-success' : 'text-destructive')
+        : (isPositive ? 'text-destructive' : 'text-success');
+
+    const TrendIcon = isPositive ? TrendingUp : TrendingDown;
+
+    return (
+        <p className={`flex items-center text-xs ${colorClass}`}>
+            <TrendIcon className="w-4 h-4 mr-1" />
+            {Math.abs(change).toFixed(1)}% from last month
+        </p>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full gap-6">
       {/* Top Row: Stat Cards */}
@@ -19,11 +124,8 @@ export default function OverviewPage() {
             <DollarSign className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">Rp 45,231,890</div>
-            <p className="flex items-center text-xs text-success">
-              <TrendingUp className="w-4 h-4 mr-1" />
-              +20.1% from last month
-            </p>
+            <div className="text-3xl font-bold">{formatCurrency(currentTotals.income)}</div>
+            {renderPercentageChange(incomePercentageChange, true)}
           </CardContent>
         </Card>
         
@@ -34,11 +136,8 @@ export default function OverviewPage() {
             <Wallet className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">Rp 12,750,300</div>
-            <p className="flex items-center text-xs text-destructive">
-              <TrendingDown className="w-4 h-4 mr-1" />
-              +2.5% from last month
-            </p>
+            <div className="text-3xl font-bold">{formatCurrency(currentTotals.expense)}</div>
+            {renderPercentageChange(expensePercentageChange, false)}
           </CardContent>
         </Card>
 
@@ -49,8 +148,8 @@ export default function OverviewPage() {
             <Scale className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">Rp 32,481,590</div>
-            <p className="text-xs text-muted-foreground">Your current financial standing.</p>
+            <div className="text-3xl font-bold">{formatCurrency(netBalance)}</div>
+            <p className="text-xs text-muted-foreground">Your current month's standing.</p>
           </CardContent>
         </Card>
       </div>
