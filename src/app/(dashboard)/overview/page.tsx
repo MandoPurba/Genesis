@@ -6,19 +6,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
-import { TrendingUp, TrendingDown, DollarSign, Wallet, Activity, BarChart, Scale } from "lucide-react"
+import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale } from "lucide-react"
 import { redirect } from "next/navigation"
-
-// Helper function to format currency
-const formatCurrency = (amount: number | null) => {
-  if (amount === null || isNaN(amount)) return "Rp 0";
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
+import { OverviewChart } from "@/components/overview-chart"
+import { formatCurrency } from "@/lib/utils"
 
 // Helper function to get start and end of a month
 const getMonthDateRange = (date: Date) => {
@@ -27,8 +18,8 @@ const getMonthDateRange = (date: Date) => {
     const firstDay = new Date(year, month, 1, 0, 0, 0, 0);
     const lastDay = new Date(year, month + 1, 0, 23, 59, 59, 999);
     return {
-        start: firstDay.toUTCString(),
-        end: lastDay.toUTCString(),
+        start: firstDay.toISOString(),
+        end: lastDay.toISOString(),
     };
 };
 
@@ -56,7 +47,8 @@ export default async function OverviewPage() {
       .select('amount, type, date')
       .eq('user_id', user.id)
       .gte('date', lastMonthRange.start)
-      .lte('date', currentMonthRange.end);
+      .lte('date', currentMonthRange.end)
+      .order('date', { ascending: true });
 
   if (error) {
       console.error("Error fetching transactions:", error);
@@ -113,6 +105,36 @@ export default async function OverviewPage() {
     );
   };
 
+  // Prepare data for the chart
+  const dailyData = new Map<string, { income: number; expense: number }>();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(now.getFullYear(), now.getMonth(), day);
+    const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    dailyData.set(formattedDate, { income: 0, expense: 0 });
+  }
+
+  currentMonthTransactions.forEach(t => {
+      const transactionDate = new Date(t.date);
+      const formattedDate = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const dayEntry = dailyData.get(formattedDate);
+
+      if (dayEntry) {
+          if (t.type === 'income') {
+              dayEntry.income += t.amount;
+          } else if (t.type === 'expense') {
+              dayEntry.expense += t.amount;
+          }
+      }
+  });
+
+  const chartData = Array.from(dailyData.entries()).map(([date, { income, expense }]) => ({
+      date,
+      income,
+      expense
+  }));
+
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Top Row: Stat Cards */}
@@ -157,17 +179,7 @@ export default async function OverviewPage() {
       {/* Bottom Row: Charts & Other Info */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Main Chart */}
-        <Card className="flex flex-col lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Income vs Expenses</CardTitle>
-            <CardDescription>A visual representation of your cash flow.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center flex-1">
-            <div data-ai-hint="bar chart" className="flex items-center justify-center w-full h-full rounded-lg bg-muted/50">
-              <BarChart className="w-16 h-16 text-muted-foreground/50"/>
-            </div>
-          </CardContent>
-        </Card>
+        <OverviewChart data={chartData} />
         
         {/* Side Cards */}
         <div className="flex flex-col col-span-1 gap-4">
@@ -195,7 +207,7 @@ export default async function OverviewPage() {
             </CardHeader>
             <CardContent className="flex items-center justify-center flex-1">
                <div data-ai-hint="pie chart" className="flex items-center justify-center w-full h-full rounded-lg bg-muted/50">
-                 <Activity className="w-16 h-16 text-muted-foreground/50"/>
+                 <p className="text-sm text-muted-foreground">Chart coming soon</p>
                </div>
             </CardContent>
           </Card>
