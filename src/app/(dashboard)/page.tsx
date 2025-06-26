@@ -4,11 +4,11 @@ export default function DashboardRootPage() {
   return (
     <Card className="bg-card/70 dark:bg-card/50 backdrop-blur-lg">
         <CardHeader>
-            <CardTitle>Welcome!</CardTitle>
+            <CardTitle>Welcome to Genesis Pro!</CardTitle>
         </CardHeader>
         <CardContent>
             <h1 className="text-4xl font-bold">Hello, World!</h1>
-            <p className="text-muted-foreground mt-2">This is the beginning of your Project Genesis dashboard.</p>
+            <p className="text-muted-foreground mt-2">This is the beginning of your personal budgeting dashboard.</p>
         </CardContent>
     </Card>
   )

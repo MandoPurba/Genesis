@@ -4,47 +4,47 @@
 
 @layer base {
   :root {
-    --background: 220 17% 95%;
-    --foreground: 215 30% 18%;
+    --background: 220 17% 95%; /* Light: #F0F2F5 */
+    --foreground: 215 30% 18%; /* Light Text: #1E293B */
     --card: 0 0% 100%;
     --card-foreground: 215 30% 18%;
     --popover: 0 0% 100%;
     --popover-foreground: 215 30% 18%;
-    --primary: 211 100% 50%;
+    --primary: 211 100% 50%; /* Accent: #007AFF */
     --primary-foreground: 210 40% 98%;
     --secondary: 215 25% 90%;
     --secondary-foreground: 215 30% 18%;
     --muted: 215 25% 90%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 16% 47%; /* Light Secondary Text: #64748B */
     --accent: 215 25% 90%;
     --accent-foreground: 215 30% 18%;
-    --destructive: 2 100% 60%;
+    --destructive: 2 100% 60%; /* Danger/Expense: #FF3B30 */
     --destructive-foreground: 210 40% 98%;
-    --success: 145 63% 49%;
+    --success: 145 63% 49%; /* Success/Income: #34C759 */
     --success-foreground: 210 40% 98%;
     --border: 215 20% 85%;
     --input: 215 20% 85%;
     --ring: 211 100% 50%;
-    --radius: 0.8rem;
+    --radius: 1rem;
   }
   .dark {
-    --background: 218 27% 9%;
-    --foreground: 215 25% 90%;
+    --background: 218 27% 9%; /* Dark: #0D1117 */
+    --foreground: 215 25% 90%; /* Dark Text: #E2E8F0 */
     --card: 214 21% 15%;
     --card-foreground: 215 25% 90%;
     --popover: 218 27% 9%;
     --popover-foreground: 215 25% 90%;
-    --primary: 211 100% 50%;
+    --primary: 211 100% 50%; /* Accent: #007AFF */
     --primary-foreground: 210 40% 98%;
     --secondary: 214 21% 15%;
     --secondary-foreground: 215 25% 90%;
     --muted: 214 21% 15%;
-    --muted-foreground: 214 21% 67%;
+    --muted-foreground: 214 21% 67%; /* Dark Secondary Text: #94A3B8 */
     --accent: 214 21% 15%;
     --accent-foreground: 215 25% 90%;
-    --destructive: 2 100% 60%;
+    --destructive: 2 100% 60%; /* Danger/Expense: #FF3B30 */
     --destructive-foreground: 210 40% 98%;
-    --success: 145 63% 49%;
+    --success: 145 63% 49%; /* Success/Income: #34C759 */
     --success-foreground: 210 40% 98%;
     --border: 214 21% 25%;
     --input: 214 21% 25%;
