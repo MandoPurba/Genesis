@@ -8,6 +8,12 @@
     --foreground: 20 5% 25%; /* Dark Charcoal */
     --card: 0 0% 100%;
     --card-foreground: 20 5% 25%;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 20 5% 25%;
+    --sidebar-border: 70 20% 90%;
+    --sidebar-accent: 70 30% 92%;
+    --sidebar-accent-foreground: 20 5% 25%;
+    --sidebar-ring: 158 34% 42%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 5% 25%;
     --primary: 158 34% 42%; /* Muted Sage Green */
@@ -32,6 +38,12 @@
     --foreground: 210 20% 95%; /* Light Gray */
     --card: 220 18% 16%;
     --card-foreground: 210 20% 95%;
+    --sidebar: 220 18% 16%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-border: 220 18% 25%;
+    --sidebar-accent: 220 18% 20%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-ring: 158 34% 50%;
     --popover: 220 18% 12%;
     --popover-foreground: 210 20% 95%;
     --primary: 158 34% 50%; /* Muted Sage Green */
