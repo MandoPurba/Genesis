@@ -1,3 +1,4 @@
+
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { MainNav } from "@/components/main-nav"
