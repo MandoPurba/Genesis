@@ -42,15 +42,27 @@ export default async function BudgetsPage() {
   const year = now.getFullYear();
   const month = now.getMonth(); // 0-11 for Date object
 
-  const { data: budgets, error: budgetsError } = await supabase
-    .from('budgets')
-    .select('id, amount, categories (id, name)')
-    .eq('user_id', user.id)
-    .eq('year', year)
-    .eq('month', month + 1); // Assuming month is stored as 1-12 in DB
+  // Fetch categories and budgets in parallel
+  const [categoriesResult, budgetsResult] = await Promise.all([
+    supabase.from('categories').select('id, name').eq('type', 'expense'),
+    supabase
+      .from('budgets')
+      .select('id, amount, category_id')
+      .eq('user_id', user.id)
+      .eq('year', year)
+      .eq('month', month + 1)
+  ]);
+  
+  const { data: allCategories, error: categoriesError } = categoriesResult;
+  const { data: budgets, error: budgetsError } = budgetsResult;
+
+  if (categoriesError) {
+    console.error("Error fetching categories:", categoriesError);
+    return <div>Error loading category data.</div>;
+  }
 
   if (budgetsError) {
-    console.error("Error fetching budgets:", budgetsError);
+    console.error("Error fetching budgets:", budgetsError.message);
     if (budgetsError.code === '42P01') { // relation "budgets" does not exist
         return (
             <Card>
@@ -71,6 +83,8 @@ export default async function BudgetsPage() {
     }
     return <div>Error loading budgets. Please check the console for details.</div>
   }
+
+  const categoryMap = new Map((allCategories || []).map(c => [c.id, c]));
 
   const monthStartDate = new Date(year, month, 1).toISOString();
   const monthEndDate = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
@@ -96,21 +110,18 @@ export default async function BudgetsPage() {
   }, {} as { [key: string]: number });
 
   const budgetsWithSpending: BudgetWithSpending[] = (budgets || []).map(b => {
-    const spent = spendingByCategory[b.categories?.id || ''] || 0;
+    const spent = b.category_id ? spendingByCategory[b.category_id] || 0 : 0;
+    const categoryInfo = b.category_id ? categoryMap.get(b.category_id) : null;
     return {
       id: b.id,
       amount: b.amount,
-      categories: b.categories,
+      categories: categoryInfo ? { id: categoryInfo.id, name: categoryInfo.name } : null,
       spent,
       remaining: b.amount - spent,
     };
   }).sort((a, b) => (a.remaining) - (b.remaining));
 
-  const { data: categories } = await supabase
-    .from('categories')
-    .select('id, name')
-    .eq('type', 'expense')
-    .order('name');
+  const categoriesForSheet = (allCategories || []).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <Card className="h-full flex flex-col">
@@ -120,7 +131,7 @@ export default async function BudgetsPage() {
                 <CardTitle>Monthly Budgets</CardTitle>
                 <CardDescription>Manage your spending limits for each category for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.</CardDescription>
             </div>
-            <AddBudgetSheet categories={categories || []} />
+            <AddBudgetSheet categories={categoriesForSheet} />
         </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-auto p-4">
