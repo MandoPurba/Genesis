@@ -47,38 +47,38 @@ export default async function DashboardLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        {/* Header */}
-        <header className="flex h-20 items-center gap-4 border-b bg-transparent px-4 md:px-6 sticky top-0 z-10">
-          <SidebarTrigger className="md:hidden" />
-          
-          <div className="flex-1">
-            <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
-            <p className="text-sm text-muted-foreground">Explore information and activity about your finances</p>
-          </div>
+        <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            {/* Header Content */}
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                    <SidebarTrigger className="md:hidden" />
+                    <div>
+                        <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
+                        <p className="text-sm text-muted-foreground">Explore information and activity about your finances</p>
+                    </div>
+                </div>
 
-          <div className="flex items-center gap-4">
-             <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input type="search" placeholder="Search..." className="pl-9 bg-card/80 rounded-full" />
+                <div className="flex items-center gap-4">
+                    <div className="relative hidden md:block">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input type="search" placeholder="Search..." className="pl-9 bg-card/80 rounded-full" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
+                        <Button variant="ghost" size="icon" className="rounded-full">
+                            <MessageCircle className="h-5 w-5" />
+                            <span className="sr-only">Messages</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="rounded-full">
+                            <Bell className="h-5 w-5" />
+                            <span className="sr-only">Notifications</span>
+                        </Button>
+                    </div>
+                </div>
             </div>
-            <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <Button variant="ghost" size="icon" className="rounded-full">
-                    <MessageCircle className="h-5 w-5" />
-                    <span className="sr-only">Messages</span>
-                </Button>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                    <Bell className="h-5 w-5" />
-                    <span className="sr-only">Notifications</span>
-                </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-          {children}
-        </main>
+            {/* Page Content */}
+            {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
