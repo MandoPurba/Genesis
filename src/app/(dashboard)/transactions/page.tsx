@@ -24,11 +24,11 @@ export default async function TransactionsPage() {
     redirect('/login');
   }
 
-  // Fetch initial data for the table and the form
+  // Fetch initial data for the table and the form, ensuring it's scoped to the user
   const [initialTransactions, categoriesData, accountsData] = await Promise.all([
     fetchTransactions(0),
-    supabase.from('categories').select('*').order('name'),
-    supabase.from('accounts').select('id, name').order('name')
+    supabase.from('categories').select('*').eq('user_id', user.id).order('name'),
+    supabase.from('accounts').select('id, name').eq('user_id', user.id).order('name')
   ]);
 
   const categories = categoriesData.data || [];

@@ -49,11 +49,12 @@ export async function addTransaction(prevState: any, formData: FormData) {
     return { error: `Database error: ${transactionError.message}` }
   }
   
-  // Update account balance
+  // Update account balance, ensuring the user owns the account
   const { data: account, error: accountError } = await supabase
     .from('accounts')
     .select('balance')
     .eq('id', accountId)
+    .eq('user_id', user.id) // Ensure user owns the account
     .single()
 
   if (accountError) {
@@ -67,6 +68,7 @@ export async function addTransaction(prevState: any, formData: FormData) {
     .from('accounts')
     .update({ balance: newBalance })
     .eq('id', accountId)
+    .eq('user_id', user.id) // Ensure user owns the account
 
   if (updateError) {
     console.error('Error updating account balance:', updateError)

@@ -49,9 +49,9 @@ CREATE TABLE budgets (
   const currentMonthStartDate = new Date(year, month, 1);
   const currentMonthStartDateString = currentMonthStartDate.toISOString().split('T')[0];
 
-  // Fetch categories and budgets in parallel
+  // Fetch categories and budgets in parallel, scoped to the current user
   const [categoriesResult, budgetsResult] = await Promise.all([
-    supabase.from('categories').select('id, name, type').eq('type', 'expense'),
+    supabase.from('categories').select('id, name, type').eq('user_id', user.id).eq('type', 'expense'),
     supabase
       .from('budgets')
       .select('id, amount, category_id')
