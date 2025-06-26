@@ -141,7 +141,7 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-transparent",
+              "group/sidebar-wrapper flex w-full has-[[data-variant=inset]]:bg-transparent",
               className
             )}
             ref={ref}
@@ -179,7 +179,7 @@ const Sidebar = React.forwardRef<
 
     if (collapsible === "none") {
       return (
-        <div
+        <aside
           className={cn(
             "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
@@ -188,7 +188,7 @@ const Sidebar = React.forwardRef<
           {...props}
         >
           {children}
-        </div>
+        </aside>
       )
     }
 
@@ -213,16 +213,15 @@ const Sidebar = React.forwardRef<
     }
 
     return (
-      <div
+      <aside
         ref={ref}
         data-sidebar="sidebar"
         className={cn(
           "group flex-shrink-0 text-sidebar-foreground",
-          // These classes control width and transition for collapse
           "duration-200 transition-[width] ease-linear",
           "w-[--sidebar-width]",
           "data-[state=collapsed]:w-[--sidebar-width-icon]",
-          "flex flex-col bg-sidebar/80 dark:bg-sidebar/50 backdrop-blur-xl rounded-[50%] border border-white/20 shadow",
+          "flex flex-col bg-sidebar/80 dark:bg-sidebar/50 backdrop-blur-xl rounded-full border border-white/20 shadow",
           className
         )}
         data-state={state}
@@ -232,7 +231,7 @@ const Sidebar = React.forwardRef<
         {...props}
       >
         {children}
-      </div>
+      </aside>
     )
   }
 )
