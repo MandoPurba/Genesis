@@ -1,28 +1,6 @@
 "use client"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { formatCurrency } from "@/lib/utils"
-import {
-    Briefcase,
-    Car,
-    FileText,
-    Gift,
-    HeartPulse,
-    Home,
-    Landmark,
-    MoreHorizontal,
-    ShoppingCart,
-    Ticket,
-    TrendingUp,
-    Utensils,
-    BookOpen
-} from "lucide-react"
+import { formatCurrency, IconForCategory } from "@/lib/utils"
 
 type Transaction = {
     id: number;
@@ -35,28 +13,6 @@ type Transaction = {
     } | null;
 }
 
-const categoryIcons: { [key: string]: React.ElementType } = {
-    'Food & Drinks': Utensils,
-    'Transportation': Car,
-    'Entertainment': Ticket,
-    'Shopping': ShoppingCart,
-    'Utility Bills': FileText,
-    'Education': BookOpen,
-    'Health': HeartPulse,
-    'Rent': Home,
-    'Salary': Briefcase,
-    'Gifts': Gift,
-    'Sales': TrendingUp,
-    'Investments': Landmark,
-    'Other': MoreHorizontal,
-    'Uncategorized': MoreHorizontal,
-};
-
-function IconForCategory({ categoryName }: { categoryName: string }) {
-    const Icon = categoryIcons[categoryName] || MoreHorizontal;
-    return <Icon className="h-5 w-5 text-muted-foreground" />;
-}
-
 export function RecentTransactions({ transactions }: { transactions: Transaction[] }) {
     return (
         <div className="flex flex-col h-full">
@@ -66,7 +22,7 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
                         <div key={transaction.id} className="flex items-center">
                             <div className="flex-1 flex items-center gap-4">
                                 <div className="p-3 bg-secondary rounded-full flex items-center justify-center">
-                                  <IconForCategory categoryName={transaction.categories?.name || 'Uncategorized'} />
+                                  <IconForCategory categoryName={transaction.categories?.name || 'Uncategorized'} className="text-muted-foreground" />
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium leading-none">
