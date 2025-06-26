@@ -215,11 +215,14 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className={cn("group hidden md:block text-sidebar-foreground",
+        data-sidebar="sidebar"
+        className={cn(
+          "group flex-shrink-0 text-sidebar-foreground",
           // These classes control width and transition for collapse
           "duration-200 transition-[width] ease-linear",
           "w-[--sidebar-width]",
           "data-[state=collapsed]:w-[--sidebar-width-icon]",
+          "flex flex-col bg-sidebar/80 dark:bg-sidebar/50 backdrop-blur-xl rounded-[50%] border border-white/20 shadow",
           className
         )}
         data-state={state}
@@ -228,12 +231,7 @@ const Sidebar = React.forwardRef<
         data-side={side}
         {...props}
       >
-        <div
-          data-sidebar="sidebar"
-          className="flex h-full w-full flex-col bg-sidebar/80 dark:bg-sidebar/50 backdrop-blur-xl rounded-lg border border-white/20 shadow"
-        >
-          {children}
-        </div>
+        {children}
       </div>
     )
   }
