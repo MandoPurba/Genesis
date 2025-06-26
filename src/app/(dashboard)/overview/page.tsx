@@ -226,7 +226,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <DollarSign className="w-5 h-5 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(currentTotals.income)}</div>
+            <div className="text-2xl font-bold text-success">{formatCurrency(currentTotals.income)}</div>
             {renderPercentageChange(incomePercentageChange, true)}
           </CardContent>
         </Card>
@@ -238,7 +238,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <Wallet className="w-5 h-5 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(currentTotals.expense)}</div>
+            <div className="text-2xl font-bold text-destructive">{formatCurrency(currentTotals.expense)}</div>
             {renderPercentageChange(expensePercentageChange, false)}
           </CardContent>
         </Card>
