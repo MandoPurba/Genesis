@@ -34,6 +34,13 @@
     --border: 220 17% 85%;
     --input: 220 17% 85%;
     --ring: 211 100% 50%;
+
+    /* Chart Colors */
+    --chart-1: 220 80% 60%;
+    --chart-2: 260 80% 65%;
+    --chart-3: 45 90% 55%;
+    --chart-4: 190 75% 55%;
+    --chart-5: 340 75% 60%;
     
     --radius: 1.5rem;
 
@@ -77,6 +84,13 @@
     --border: 212 45% 25%;
     --input: 212 45% 25%;
     --ring: 211 100% 50%;
+
+    /* Chart Colors */
+    --chart-1: 220 70% 50%;
+    --chart-2: 260 70% 55%;
+    --chart-3: 45 80% 50%;
+    --chart-4: 190 65% 50%;
+    --chart-5: 340 65% 55%;
 
     /* Custom sidebar vars based on new theme */
     --sidebar: 212 45% 15%;

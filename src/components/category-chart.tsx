@@ -33,7 +33,6 @@ const CHART_COLORS = [
   "hsl(var(--chart-4))",
   "hsl(var(--chart-5))",
   "hsl(var(--primary))",
-  "hsl(var(--secondary))",
 ];
 
 export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'>[] }) {
