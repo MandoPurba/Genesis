@@ -1,55 +1,85 @@
--- For this script to work, make sure you have a `accounts`, `budgets`, and `transactions` table.
--- The script is idempotent and can be run multiple times.
+-- This script can be run to seed the database with dummy data.
+-- It is idempotent and can be run multiple times.
 
--- Clear existing data to avoid duplicates on re-running
-TRUNCATE TABLE transactions, budgets, accounts RESTART IDENTITY;
+-- Clear existing data to prevent duplicates. 
+-- The order is important to respect foreign key constraints.
+delete from public.transactions;
+delete from public.budgets;
+delete from public.accounts;
 
--- Note: Replace 'ba215643-9da9-47f9-a510-4e2cc847e9c4' with the actual user_id from your auth.users table if needed.
--- This ID was provided by the user.
--- Insert into accounts and capture their IDs using CTEs (Common Table Expressions)
-WITH new_accounts AS (
-  INSERT INTO accounts (user_id, name, type, balance, currency)
-  VALUES
-    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'BCA Tahapan', 'checking', 15500000.00, 'IDR'),
-    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Mandiri Tabungan', 'savings', 50000000.00, 'IDR'),
-    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'GoPay Wallet', 'e-wallet', 750000.00, 'IDR')
-  RETURNING id, name
-),
-bca_id AS (
-  SELECT id FROM new_accounts WHERE name = 'BCA Tahapan'
-),
-mandiri_id AS (
-  SELECT id FROM new_accounts WHERE name = 'Mandiri Tabungan'
-),
-gopay_id AS (
-  SELECT id FROM new_accounts WHERE name = 'GoPay Wallet'
+-- NOTE: We don't delete from 'categories' or 'profiles' because they
+-- are automatically populated by triggers when a user is created.
+
+-- == SEED ACCOUNTS ==
+-- Use the user ID you provided.
+-- ba215643-9da9-47f9-a510-4e2cc847e9c4
+with new_accounts as (
+  insert into public.accounts (user_id, name, type, balance)
+  values
+    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'BCA Savings', 'Bank Account', 0),
+    ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'GoPay Wallet', 'E-Wallet', 0)
+  returning id, name
 )
--- Insert transactions for the current month
-INSERT INTO transactions (user_id, account_id, description, amount, type, category, date)
-VALUES
-  -- Current Month Income
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Gaji Bulanan', 8500000.00, 'income', 'Salary', NOW() - INTERVAL '5 days'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM mandiri_id), 'Proyek Desain Logo', 2500000.00, 'income', 'Freelance', NOW() - INTERVAL '10 days'),
-  
-  -- Current Month Expenses
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Sewa Apartemen', 3000000.00, 'expense', 'Housing', NOW() - INTERVAL '4 days'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM gopay_id), 'Makan Siang (Warung Padang)', 75000.00, 'expense', 'Food', NOW() - INTERVAL '3 days'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Tagihan Listrik & Air', 450000.00, 'expense', 'Utilities', NOW() - INTERVAL '2 days'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM gopay_id), 'Transportasi (Gojek)', 50000.00, 'expense', 'Transport', NOW() - INTERVAL '1 day'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM mandiri_id), 'Belanja Bulanan (Supermarket)', 1200000.00, 'expense', 'Groceries', NOW() - INTERVAL '12 days'),
+select
+  (select count(*) from new_accounts) || ' accounts inserted.' as status;
 
-  -- Last Month Income (for percentage comparison)
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Gaji Bulan Lalu', 8000000.00, 'income', 'Salary', NOW() - INTERVAL '1 month' - INTERVAL '5 days'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM mandiri_id), 'Bonus Kinerja', 1000000.00, 'income', 'Bonus', NOW() - INTERVAL '1 month' - INTERVAL '15 days'),
-  
-  -- Last Month Expenses (for percentage comparison)
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM bca_id), 'Sewa Apartemen Bulan Lalu', 3000000.00, 'expense', 'Housing', NOW() - INTERVAL '1 month' - INTERVAL '4 days'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', (SELECT id FROM gopay_id), 'Tiket Konser', 500000.00, 'expense', 'Entertainment', NOW() - INTERVAL '1 month' - INTERVAL '20 days');
 
--- Insert budgets
-INSERT INTO budgets (user_id, name, amount, category)
-VALUES
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Makanan & Minuman', 2000000.00, 'Food'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Transportasi', 500000.00, 'Transport'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Hiburan', 750000.00, 'Entertainment'),
-  ('ba215643-9da9-47f9-a510-4e2cc847e9c4', 'Budget Kebutuhan Rumah', 2000000.00, 'Groceries');
+-- == SEED TRANSACTIONS & BUDGETS ==
+-- This block uses PL/pgSQL to dynamically get foreign keys and insert data.
+do $$
+declare
+  user_uuid uuid := 'ba215643-9da9-47f9-a510-4e2cc847e9c4';
+  bca_account_id bigint;
+  gopay_account_id bigint;
+  salary_category_id bigint;
+  food_category_id bigint;
+  transport_category_id bigint;
+  shopping_category_id bigint;
+begin
+  -- Get Account IDs created above
+  select id into bca_account_id from public.accounts where user_id = user_uuid and name = 'BCA Savings';
+  select id into gopay_account_id from public.accounts where user_id = user_uuid and name = 'GoPay Wallet';
+  
+  -- Get Category IDs (these are created by a trigger when the user's profile is made)
+  select id into salary_category_id from public.categories where user_id = user_uuid and name = 'Salary';
+  select id into food_category_id from public.categories where user_id = user_uuid and name = 'Food & Drinks';
+  select id into transport_category_id from public.categories where user_id = user_uuid and name = 'Transportation';
+  select id into shopping_category_id from public.categories where user_id = user_uuid and name = 'Shopping';
+
+  -- Insert transactions for the CURRENT month
+  raise notice 'Inserting transactions for current month...';
+  insert into public.transactions (user_id, date, type, amount, description, category_id, account_id)
+  values
+    (user_uuid, now(), 'income', 8000000, 'Monthly Salary', salary_category_id, bca_account_id),
+    (user_uuid, now() - interval '2 days', 'expense', 150000, 'Lunch with team', food_category_id, gopay_account_id),
+    (user_uuid, now() - interval '3 days', 'expense', 50000, 'GoJek Ride', transport_category_id, gopay_account_id),
+    (user_uuid, now() - interval '5 days', 'expense', 350000, 'New Shoes', shopping_category_id, bca_account_id);
+
+  -- Insert transactions for the PREVIOUS month for comparison
+  raise notice 'Inserting transactions for previous month...';
+  insert into public.transactions (user_id, date, type, amount, description, category_id, account_id)
+  values
+    (user_uuid, now() - interval '1 month', 'income', 7800000, 'Previous Month Salary', salary_category_id, bca_account_id),
+    (user_uuid, now() - interval '1 month' - interval '5 days', 'expense', 1200000, 'Monthly Groceries', shopping_category_id, bca_account_id),
+    (user_uuid, now() - interval '1 month' - interval '10 days', 'expense', 400000, 'Dinner and a movie', food_category_id, gopay_account_id);
+
+  -- Recalculate account balances based on all transactions
+  raise notice 'Recalculating account balances...';
+  update public.accounts a
+  set balance = (
+    select
+      coalesce(sum(case when t.type = 'income' then t.amount when t.type = 'expense' then -t.amount else 0 end), 0)
+    from public.transactions t
+    where t.account_id = a.id
+  )
+  where a.user_id = user_uuid;
+
+  -- Insert budgets for the current month
+  raise notice 'Inserting budgets...';
+  insert into public.budgets (user_id, category_id, amount, period, start_date)
+  values
+    (user_uuid, food_category_id, 2000000, 'monthly', date_trunc('month', now())::date),
+    (user_uuid, shopping_category_id, 1500000, 'monthly', date_trunc('month', now())::date);
+    
+  raise notice 'Seeding complete.';
+end $$;

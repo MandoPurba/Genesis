@@ -114,9 +114,9 @@ export default async function OverviewPage() {
   };
 
   return (
-    <div className="flex flex-col h-full gap-6">
+    <div className="flex flex-col h-full gap-4">
       {/* Top Row: Stat Cards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Total Income */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -124,7 +124,7 @@ export default async function OverviewPage() {
             <DollarSign className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatCurrency(currentTotals.income)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(currentTotals.income)}</div>
             {renderPercentageChange(incomePercentageChange, true)}
           </CardContent>
         </Card>
@@ -136,7 +136,7 @@ export default async function OverviewPage() {
             <Wallet className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatCurrency(currentTotals.expense)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(currentTotals.expense)}</div>
             {renderPercentageChange(expensePercentageChange, false)}
           </CardContent>
         </Card>
@@ -148,14 +148,14 @@ export default async function OverviewPage() {
             <Scale className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatCurrency(netBalance)}</div>
-            <p className="text-xs text-muted-foreground">Your current month's standing.</p>
+            <div className="text-2xl font-bold">{formatCurrency(netBalance)}</div>
+            <p className="text-xs text-muted-foreground">This month's standing.</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Bottom Row: Charts & Other Info */}
-      <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Main Chart */}
         <Card className="flex flex-col lg:col-span-2">
           <CardHeader>
@@ -170,20 +170,20 @@ export default async function OverviewPage() {
         </Card>
         
         {/* Side Cards */}
-        <div className="flex flex-col col-span-1 gap-6">
+        <div className="flex flex-col col-span-1 gap-4">
           <Card>
             <CardHeader>
               <CardTitle>Budget Utilization</CardTitle>
               <CardDescription>Monthly spending vs budget</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="relative mx-auto w-40 h-40">
+              <div className="relative mx-auto w-32 h-32">
                   <svg className="w-full h-full" viewBox="0 0 36 36" transform="rotate(-90 18 18)">
                       <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" className="stroke-current text-secondary" strokeWidth="4" fill="none" />
                       <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831" className="stroke-current text-primary" strokeWidth="4" fill="none" strokeDasharray="65, 100" strokeLinecap="round" />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-3xl font-bold">65%</span>
+                      <span className="text-2xl font-bold">65%</span>
                       <span className="text-xs text-muted-foreground">Used</span>
                   </div>
               </div>
