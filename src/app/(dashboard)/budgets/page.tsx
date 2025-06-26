@@ -5,13 +5,14 @@ import { BudgetItem } from "@/components/budget-item";
 import { AddBudgetSheet } from "@/components/add-budget-sheet";
 import { FileSearch } from "lucide-react";
 
+// Updated type to match schema (bigint -> number)
 export type BudgetWithSpending = {
-  id: string;
+  id: number;
   amount: number;
   spent: number;
   remaining: number;
   categories: {
-    id: string;
+    id: number;
     name: string;
   } | null;
 };
@@ -27,30 +28,35 @@ export default async function BudgetsPage() {
     redirect('/login');
   }
 
-  const createBudgetsTableSql = `CREATE TABLE budgets (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  // Updated SQL to match provided schema
+  const createBudgetsTableSql = `CREATE TYPE budget_period AS ENUM ('monthly', 'yearly');
+
+CREATE TABLE budgets (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  category_id UUID REFERENCES categories(id) ON DELETE CASCADE NOT NULL,
+  category_id BIGINT REFERENCES categories(id) ON DELETE CASCADE NOT NULL,
   amount NUMERIC NOT NULL,
-  month INT NOT NULL,
-  year INT NOT NULL,
+  period budget_period NOT NULL,
+  start_date DATE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, category_id, year, month)
+  UNIQUE(user_id, category_id, start_date)
 );`;
 
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth(); // 0-11 for Date object
 
+  const currentMonthStartDate = new Date(year, month, 1);
+  const currentMonthStartDateString = currentMonthStartDate.toISOString().split('T')[0];
+
   // Fetch categories and budgets in parallel
   const [categoriesResult, budgetsResult] = await Promise.all([
-    supabase.from('categories').select('id, name').eq('type', 'expense'),
+    supabase.from('categories').select('id, name, type').eq('type', 'expense'),
     supabase
       .from('budgets')
       .select('id, amount, category_id')
       .eq('user_id', user.id)
-      .eq('year', year)
-      .eq('month', month + 1)
+      .eq('start_date', currentMonthStartDateString) // Filter by start date of the current month
   ]);
   
   const { data: allCategories, error: categoriesError } = categoriesResult;
@@ -62,7 +68,7 @@ export default async function BudgetsPage() {
   }
 
   if (budgetsError) {
-    console.error("Error fetching budgets:", budgetsError.message);
+    console.error("Error fetching budgets:", budgetsError);
     if (budgetsError.code === '42P01') { // relation "budgets" does not exist
         return (
             <Card>
@@ -86,28 +92,28 @@ export default async function BudgetsPage() {
 
   const categoryMap = new Map((allCategories || []).map(c => [c.id, c]));
 
-  const monthStartDate = new Date(year, month, 1).toISOString();
-  const monthEndDate = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
+  const monthStartDateISO = new Date(year, month, 1).toISOString();
+  const monthEndDateISO = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
 
   const { data: transactions, error: transactionsError } = await supabase
     .from('transactions')
     .select('amount, category_id')
     .eq('user_id', user.id)
     .eq('type', 'expense')
-    .gte('date', monthStartDate)
-    .lte('date', monthEndDate);
+    .gte('date', monthStartDateISO)
+    .lte('date', monthEndDateISO);
 
   if (transactionsError) {
     console.error("Error fetching transactions for budgets:", transactionsError);
     return <div>Error loading transaction data.</div>
   }
   
-  const spendingByCategory: { [key: string]: number } = (transactions || []).reduce((acc, t) => {
+  const spendingByCategory: { [key: number]: number } = (transactions || []).reduce((acc, t) => {
       if (t.category_id) {
           acc[t.category_id] = (acc[t.category_id] || 0) + t.amount;
       }
       return acc;
-  }, {} as { [key: string]: number });
+  }, {} as { [key: number]: number });
 
   const budgetsWithSpending: BudgetWithSpending[] = (budgets || []).map(b => {
     const spent = b.category_id ? spendingByCategory[b.category_id] || 0 : 0;

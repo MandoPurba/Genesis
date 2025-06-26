@@ -20,7 +20,8 @@ import { useToast } from "@/hooks/use-toast"
 import { PlusCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
-type Category = { id: string; name: string; }
+// Updated type to match schema (bigint -> number)
+type Category = { id: number; name: string; }
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -84,7 +85,8 @@ export function AddBudgetSheet({ categories }: { categories: Category[] }) {
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map(category => (
-                    <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                    // Convert number ID to string for the value prop
+                    <SelectItem key={category.id} value={category.id.toString()}>{category.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
