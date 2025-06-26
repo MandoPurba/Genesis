@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function BudgetsPage() {
   return (
-    <Card>
+    <Card className="bg-card/70 dark:bg-card/50 backdrop-blur-lg">
       <CardHeader>
         <CardTitle>Budgets</CardTitle>
         <CardDescription>Manage your budgets here.</CardDescription>

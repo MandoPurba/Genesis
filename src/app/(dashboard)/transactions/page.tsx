@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function TransactionsPage() {
   return (
-    <Card>
+    <Card className="bg-card/70 dark:bg-card/50 backdrop-blur-lg">
       <CardHeader>
         <CardTitle>Transactions</CardTitle>
         <CardDescription>Manage your transactions here.</CardDescription>

@@ -8,11 +8,13 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { DollarSign, Target } from "lucide-react"
 
+const glassCard = "bg-card/70 dark:bg-card/50 backdrop-blur-lg";
+
 export default function OverviewPage() {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-        <Card>
+        <Card className={glassCard}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Income</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -24,7 +26,7 @@ export default function OverviewPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={glassCard}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -36,7 +38,7 @@ export default function OverviewPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={glassCard}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -48,7 +50,7 @@ export default function OverviewPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={glassCard}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Budget Utilization</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
@@ -60,7 +62,7 @@ export default function OverviewPage() {
         </Card>
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
+        <Card className={`xl:col-span-2 ${glassCard}`}>
           <CardHeader>
             <CardTitle>Income vs Expenses</CardTitle>
             <CardDescription>
@@ -68,12 +70,12 @@ export default function OverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <div data-ai-hint="bar chart" className="h-[350px] w-full bg-muted rounded-md flex items-center justify-center">
+            <div data-ai-hint="bar chart" className="h-[350px] w-full bg-muted/50 rounded-md flex items-center justify-center">
                 <p className="text-muted-foreground">Chart placeholder</p>
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={glassCard}>
           <CardHeader>
             <CardTitle>Expenses by Category</CardTitle>
             <CardDescription>
@@ -81,7 +83,7 @@ export default function OverviewPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-             <div data-ai-hint="pie chart" className="h-[350px] w-full bg-muted rounded-md flex items-center justify-center">
+             <div data-ai-hint="pie chart" className="h-[350px] w-full bg-muted/50 rounded-md flex items-center justify-center">
                 <p className="text-muted-foreground">Chart placeholder</p>
             </div>
           </CardContent>

@@ -35,7 +35,7 @@ export default async function LoginPage() {
           <TabsTrigger value="signup">Sign Up</TabsTrigger>
         </TabsList>
         <TabsContent value="login">
-          <Card>
+          <Card className="bg-card/70 dark:bg-card/50 backdrop-blur-lg border-white/20">
             <CardHeader>
               <CardTitle>Login</CardTitle>
               <CardDescription>
@@ -48,7 +48,7 @@ export default async function LoginPage() {
           </Card>
         </TabsContent>
         <TabsContent value="signup">
-          <Card>
+          <Card className="bg-card/70 dark:bg-card/50 backdrop-blur-lg border-white/20">
             <CardHeader>
               <CardTitle>Sign Up</CardTitle>
               <CardDescription>
