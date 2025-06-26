@@ -1,14 +1,142 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { BudgetItem } from "@/components/budget-item";
+import { AddBudgetSheet } from "@/components/add-budget-sheet";
+import { FileSearch } from "lucide-react";
 
-export default function BudgetsPage() {
+export type BudgetWithSpending = {
+  id: string;
+  amount: number;
+  spent: number;
+  remaining: number;
+  categories: {
+    id: string;
+    name: string;
+  } | null;
+};
+
+export default async function BudgetsPage() {
+  const supabase = createClient();
+  if (!supabase) {
+    return <div>Supabase client not available.</div>;
+  }
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/login');
+  }
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-11 for Date object
+
+  // Note: This assumes a 'budgets' table exists in your database.
+  // An error message is handled below if it doesn't.
+  const { data: budgets, error: budgetsError } = await supabase
+    .from('budgets')
+    .select('id, amount, categories (id, name)')
+    .eq('user_id', user.id)
+    .eq('year', year)
+    .eq('month', month + 1); // Assuming month is stored as 1-12 in DB
+
+  if (budgetsError) {
+    console.error("Error fetching budgets:", budgetsError);
+    if (budgetsError.code === '42P01') { // relation "budgets" does not exist
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Budgets Feature Not Ready</CardTitle>
+                    <CardDescription>
+                       To manage budgets, you first need to create a `budgets` table in your database.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">Please run the following command in your Supabase SQL Editor to set it up:</p>
+                    <pre className="p-4 bg-muted text-sm rounded-md overflow-x-auto">
+{`CREATE TABLE budgets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  category_id UUID REFERENCES categories(id) ON DELETE CASCADE NOT NULL,
+  amount NUMERIC NOT NULL,
+  month INT NOT NULL,
+  year INT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, category_id, year, month)
+);`}
+                    </pre>
+                </CardContent>
+            </Card>
+        )
+    }
+    return <div>Error loading budgets. Please check the console for details.</div>
+  }
+
+  const monthStartDate = new Date(year, month, 1).toISOString();
+  const monthEndDate = new Date(year, month + 1, 0, 23, 59, 59, 999).toISOString();
+
+  const { data: transactions, error: transactionsError } = await supabase
+    .from('transactions')
+    .select('amount, category_id')
+    .eq('user_id', user.id)
+    .eq('type', 'expense')
+    .gte('date', monthStartDate)
+    .lte('date', monthEndDate);
+
+  if (transactionsError) {
+    console.error("Error fetching transactions for budgets:", transactionsError);
+    return <div>Error loading transaction data.</div>
+  }
+  
+  const spendingByCategory: { [key: string]: number } = (transactions || []).reduce((acc, t) => {
+      if (t.category_id) {
+          acc[t.category_id] = (acc[t.category_id] || 0) + t.amount;
+      }
+      return acc;
+  }, {} as { [key: string]: number });
+
+  const budgetsWithSpending: BudgetWithSpending[] = (budgets || []).map(b => {
+    const spent = spendingByCategory[b.categories?.id || ''] || 0;
+    return {
+      id: b.id,
+      amount: b.amount,
+      categories: b.categories,
+      spent,
+      remaining: b.amount - spent,
+    };
+  }).sort((a, b) => (a.remaining) - (b.remaining));
+
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('id, name')
+    .eq('type', 'expense')
+    .order('name');
+
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle>Budgets</CardTitle>
-        <CardDescription>Manage your budgets here.</CardDescription>
+        <div className="flex justify-between items-center">
+            <div>
+                <CardTitle>Monthly Budgets</CardTitle>
+                <CardDescription>Manage your spending limits for each category for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.</CardDescription>
+            </div>
+            <AddBudgetSheet categories={categories || []} />
+        </div>
       </CardHeader>
-      <CardContent>
-        <p>Budget management interface will be here.</p>
+      <CardContent className="flex-1 overflow-auto p-4">
+        {budgetsWithSpending.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {budgetsWithSpending.map(budget => (
+              <BudgetItem key={budget.id} budget={budget} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-center rounded-lg bg-muted/50 p-10">
+            <FileSearch className="w-16 h-16 text-muted-foreground/50"/>
+            <h3 className="text-lg font-semibold mt-4">No Budgets Set</h3>
+            <p className="text-muted-foreground">You haven't set any budgets for this month yet.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
