@@ -197,7 +197,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
     .select('id, date, type, amount, description, categories ( name )')
     .eq('user_id', user.id)
     .order('date', { ascending: false })
-    .limit(5);
+    .limit(50);
 
   if (recentTransactionsError) {
       console.error("Error fetching recent transactions:", recentTransactionsError);
