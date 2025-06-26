@@ -21,9 +21,9 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "10rem"
+const SIDEBAR_WIDTH = "9.8rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3.5rem"
+const SIDEBAR_WIDTH_ICON = "3.3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
@@ -352,7 +352,7 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn("flex flex-col items-center gap-2 p-2 mt-auto", className)}
+      className={cn("flex flex-col items-center gap-2 p-1 mt-auto", className)}
       {...props}
     />
   )
@@ -383,7 +383,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto py-2 group-data-[collapsible=icon]:overflow-hidden group-data-[state=expanded]:p-2",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto py-1 group-data-[collapsible=icon]:overflow-hidden group-data-[state=expanded]:p-2",
         className
       )}
       {...props}
@@ -471,7 +471,7 @@ const SidebarMenu = React.forwardRef<
   <ul
     ref={ref}
     data-sidebar="menu"
-    className={cn("flex w-full min-w-0 flex-col gap-1 items-center group-data-[state=expanded]:items-stretch", className)}
+    className={cn("flex w-full min-w-0 flex-col gap-2 items-center group-data-[state=expanded]:items-stretch", className)}
     {...props}
   />
 ))
