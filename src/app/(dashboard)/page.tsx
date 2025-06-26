@@ -7,8 +7,8 @@ export default function DashboardRootPage() {
             <CardTitle>Welcome to Genesis Pro!</CardTitle>
         </CardHeader>
         <CardContent>
-            <h1 className="text-4xl font-bold">Hello, World!</h1>
-            <p className="text-muted-foreground mt-2">This is the beginning of your personal budgeting dashboard.</p>
+            <h1 className="text-4xl font-bold">Your Personal Finance Hub</h1>
+            <p className="mt-2 text-muted-foreground">Navigate using the sidebar to manage your finances.</p>
         </CardContent>
     </Card>
   )

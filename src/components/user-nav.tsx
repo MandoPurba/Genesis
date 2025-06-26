@@ -30,7 +30,7 @@ export function UserNav({ user }: { user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="h-10 w-10 cursor-pointer">
+        <Avatar className="w-10 h-10 cursor-pointer">
           <AvatarImage src={user.user_metadata.avatar_url} alt="User avatar" />
           <AvatarFallback>{emailInitial}</AvatarFallback>
         </Avatar>
@@ -50,6 +50,7 @@ export function UserNav({ user }: { user: User }) {
         <DropdownMenuGroup>
           <DropdownMenuItem disabled>Profile</DropdownMenuItem>
           <DropdownMenuItem disabled>Settings</DropdownMenuItem>
+          <DropdownMenuItem disabled>Currency (IDR)</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
