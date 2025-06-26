@@ -10,9 +10,14 @@ import { LoginForm } from "./login-form"
 import { SignupForm } from "./signup-form"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
+import { SupabaseConfigWarning } from "@/components/supabase-config-warning"
 
 export default async function LoginPage() {
   const supabase = createClient()
+
+  if (!supabase) {
+    return <SupabaseConfigWarning />
+  }
 
   const {
     data: { user },

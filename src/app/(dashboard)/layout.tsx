@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
+import { SupabaseConfigWarning } from "@/components/supabase-config-warning"
 
 export default async function DashboardLayout({
   children,
@@ -13,6 +14,11 @@ export default async function DashboardLayout({
   children: React.ReactNode
 }) {
   const supabase = createClient()
+
+  if (!supabase) {
+    return <SupabaseConfigWarning />
+  }
+  
   const {
     data: { user },
   } = await supabase.auth.getUser()
