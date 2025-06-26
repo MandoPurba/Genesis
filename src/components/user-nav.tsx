@@ -30,12 +30,10 @@ export function UserNav({ user }: { user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user.user_metadata.avatar_url} alt="User avatar" />
-            <AvatarFallback>{emailInitial}</AvatarFallback>
-          </Avatar>
-        </Button>
+        <Avatar className="h-10 w-10 cursor-pointer">
+          <AvatarImage src={user.user_metadata.avatar_url} alt="User avatar" />
+          <AvatarFallback>{emailInitial}</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">

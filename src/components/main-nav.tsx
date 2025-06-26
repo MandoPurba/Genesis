@@ -4,46 +4,55 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
-  LayoutDashboard,
+  LayoutGrid,
+  ArrowRightLeft,
   Target,
-  Receipt,
   Landmark,
 } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 const links = [
-  { href: "/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/transactions", label: "Transactions", icon: Receipt },
+  { href: "/overview", label: "Overview", icon: LayoutGrid },
+  { href: "/transactions", label: "Transactions", icon: ArrowRightLeft },
   { href: "/budgets", label: "Budgets", icon: Target },
   { href: "/accounts", label: "Accounts", icon: Landmark },
 ]
 
-export function MainNav({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLElement>) {
+export function MainNav() {
   const pathname = usePathname()
 
   return (
-    <nav
-      className={cn("flex flex-col gap-2", className)}
-      {...props}
-    >
-      {links.map((link) => {
-        const isActive = pathname.startsWith(link.href)
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-              isActive && "bg-primary/10 text-primary font-semibold"
-            )}
-          >
-            <link.icon className="h-4 w-4" />
-            {link.label}
-          </Link>
-        )
-      })}
-    </nav>
+    <TooltipProvider>
+      <nav className="flex flex-col items-center gap-4 px-2 sm:py-4">
+        {links.map((link) => {
+          const isActive = pathname.startsWith(link.href)
+          return (
+            <Tooltip key={link.href} delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Link
+                  href={link.href}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-10 md:w-10",
+                    isActive && "bg-primary text-primary-foreground hover:text-primary-foreground"
+                  )}
+                >
+                  <link.icon className="h-5 w-5" />
+                  <span className="sr-only">{link.label}</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-card text-card-foreground">
+                <p>{link.label}</p>
+              </TooltipContent>
+            </Tooltip>
+          )
+        })}
+      </nav>
+    </TooltipProvider>
   )
 }

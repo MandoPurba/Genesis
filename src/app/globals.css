@@ -4,51 +4,51 @@
 
 @layer base {
   :root {
-    --background: 220 17% 95%; /* Light: #F0F2F5 */
-    --foreground: 215 30% 18%; /* Light Text: #1E293B */
+    --background: 70 40% 96%; /* Warm Off-White */
+    --foreground: 20 5% 25%; /* Dark Charcoal */
     --card: 0 0% 100%;
-    --card-foreground: 215 30% 18%;
+    --card-foreground: 20 5% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 30% 18%;
-    --primary: 211 100% 50%; /* Accent: #007AFF */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 215 25% 90%;
-    --secondary-foreground: 215 30% 18%;
-    --muted: 215 25% 90%;
-    --muted-foreground: 215 16% 47%; /* Light Secondary Text: #64748B */
-    --accent: 215 25% 90%;
-    --accent-foreground: 215 30% 18%;
-    --destructive: 2 100% 60%; /* Danger/Expense: #FF3B30 */
-    --destructive-foreground: 210 40% 98%;
-    --success: 145 63% 49%; /* Success/Income: #34C759 */
-    --success-foreground: 210 40% 98%;
-    --border: 215 20% 85%;
-    --input: 215 20% 85%;
-    --ring: 211 100% 50%;
-    --radius: 1rem;
+    --popover-foreground: 20 5% 25%;
+    --primary: 158 34% 42%; /* Muted Sage Green */
+    --primary-foreground: 160 30% 95%;
+    --secondary: 70 30% 92%;
+    --secondary-foreground: 20 5% 25%;
+    --muted: 70 30% 92%;
+    --muted-foreground: 20 5% 45%;
+    --accent: 70 30% 92%;
+    --accent-foreground: 20 5% 25%;
+    --destructive: 0 72% 51%; /* Muted Red */
+    --destructive-foreground: 0 0% 98%;
+    --success: 145 63% 42%; /* Green */
+    --success-foreground: 0 0% 98%;
+    --border: 70 20% 90%;
+    --input: 70 20% 90%;
+    --ring: 158 34% 42%;
+    --radius: 0.8rem;
   }
   .dark {
-    --background: 218 27% 9%; /* Dark: #0D1117 */
-    --foreground: 215 25% 90%; /* Dark Text: #E2E8F0 */
-    --card: 214 21% 15%;
-    --card-foreground: 215 25% 90%;
-    --popover: 218 27% 9%;
-    --popover-foreground: 215 25% 90%;
-    --primary: 211 100% 50%; /* Accent: #007AFF */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 214 21% 15%;
-    --secondary-foreground: 215 25% 90%;
-    --muted: 214 21% 15%;
-    --muted-foreground: 214 21% 67%; /* Dark Secondary Text: #94A3B8 */
-    --accent: 214 21% 15%;
-    --accent-foreground: 215 25% 90%;
-    --destructive: 2 100% 60%; /* Danger/Expense: #FF3B30 */
-    --destructive-foreground: 210 40% 98%;
-    --success: 145 63% 49%; /* Success/Income: #34C759 */
-    --success-foreground: 210 40% 98%;
-    --border: 214 21% 25%;
-    --input: 214 21% 25%;
-    --ring: 211 100% 50%;
+    --background: 220 18% 12%; /* Dark Charcoal Blue */
+    --foreground: 210 20% 95%; /* Light Gray */
+    --card: 220 18% 16%;
+    --card-foreground: 210 20% 95%;
+    --popover: 220 18% 12%;
+    --popover-foreground: 210 20% 95%;
+    --primary: 158 34% 50%; /* Muted Sage Green */
+    --primary-foreground: 160 30% 95%;
+    --secondary: 220 18% 20%;
+    --secondary-foreground: 210 20% 95%;
+    --muted: 220 18% 20%;
+    --muted-foreground: 210 20% 75%;
+    --accent: 220 18% 20%;
+    --accent-foreground: 210 20% 95%;
+    --destructive: 0 63% 45%; /* Muted Red */
+    --destructive-foreground: 0 0% 98%;
+    --success: 145 63% 42%;
+    --success-foreground: 0 0% 98%;
+    --border: 220 18% 25%;
+    --input: 220 18% 25%;
+    --ring: 158 34% 50%;
   }
 }
 

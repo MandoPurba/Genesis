@@ -4,9 +4,11 @@ import { MainNav } from "@/components/main-nav"
 import { UserNav } from "@/components/user-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
+import { Menu, Search, Bell, MessageCircle, Settings } from "lucide-react"
 import { SupabaseConfigWarning } from "@/components/supabase-config-warning"
+import Link from "next/link"
 
 export default async function DashboardLayout({
   children,
@@ -27,45 +29,75 @@ export default async function DashboardLayout({
     redirect("/login")
   }
 
+  const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden border-r bg-background/80 dark:bg-background/60 backdrop-blur-xl md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-            <a href="/" className="flex items-center gap-2 font-semibold">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className="h-6 w-6"><rect width="256" height="256" fill="none"></rect><line x1="208" y1="128" x2="240" y2="128" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="16" y1="128" x2="48" y2="128" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><path d="M80,216H48a16,16,0,0,1-16-16V56A16,16,0,0,1,48,40H80" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><path d="M176,40h32a16,16,0,0,1,16,16V200a16,16,0,0,1-16,16H176" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><path d="M80,88h96a16,16,0,0,1,16,16v40a16,16,0,0,1-16,16H80" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path></svg>
-              <span className="">Genesis Pro</span>
-            </a>
-          </div>
-          <div className="flex-1">
-            <MainNav className="grid items-start px-2 text-sm font-medium lg:px-4" />
-          </div>
+    <div className="grid min-h-screen w-full md:grid-cols-[80px_1fr]">
+      {/* Sidebar */}
+      <div className="hidden border-r bg-card md:flex md:flex-col md:justify-between">
+        <div className="flex flex-col items-center gap-4 py-4">
+          <Link href="/overview" className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 19.07l-1.41 1.41"/><path d="M19.07 19.07l-1.41-1.41"/><path d="M4.93 4.93l-1.41-1.41"/><path d="M12 6V3"/><path d="M12 21v-3"/><path d="M18 12h3"/><path d="M3 12h3"/></svg>
+          </Link>
+          <MainNav />
+        </div>
+        <div className="flex flex-col items-center gap-4 py-4">
+          <Link href="#">
+            <Settings className="h-6 w-6 text-muted-foreground transition-colors hover:text-foreground"/>
+          </Link>
+          <UserNav user={user} />
         </div>
       </div>
+      
       <div className="flex flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-background/80 dark:bg-background/60 backdrop-blur-xl px-4 lg:h-[60px] lg:px-6 sticky top-0 z-10">
+        {/* Header */}
+        <header className="flex h-20 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-10">
           <Sheet>
             <SheetTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="shrink-0 md:hidden"
-              >
+              <Button variant="outline" size="icon" className="shrink-0 md:hidden">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col bg-background/80 dark:bg-background/60 backdrop-blur-xl">
+            <SheetContent side="left" className="flex flex-col bg-card">
+              <div className="flex flex-col items-center gap-4 py-4">
+                 <Link href="/overview" className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 19.07l-1.41 1.41"/><path d="M19.07 19.07l-1.41-1.41"/><path d="M4.93 4.93l-1.41-1.41"/><path d="M12 6V3"/><path d="M12 21v-3"/><path d="M18 12h3"/><path d="M3 12h3"/></svg>
+                 </Link>
+              </div>
               <MainNav />
+              <div className="mt-auto flex flex-col items-center gap-4 py-4">
+                <UserNav user={user} />
+              </div>
             </SheetContent>
           </Sheet>
-          <div className="w-full flex-1">
-            {/* Can add search bar here later */}
+          
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
+            <p className="text-sm text-muted-foreground">Explore information and activity about your finances</p>
           </div>
-          <ThemeToggle />
-          <UserNav user={user} />
+
+          <div className="flex items-center gap-4">
+             <div className="relative hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type="search" placeholder="Search..." className="pl-9 bg-secondary rounded-full" />
+            </div>
+            <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <Button variant="ghost" size="icon" className="rounded-full">
+                    <MessageCircle className="h-5 w-5" />
+                    <span className="sr-only">Messages</span>
+                </Button>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                    <Bell className="h-5 w-5" />
+                    <span className="sr-only">Notifications</span>
+                </Button>
+            </div>
+          </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-transparent">
+
+        {/* Main Content */}
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-background">
           {children}
         </main>
       </div>

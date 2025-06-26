@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardRootPage() {
   return (
-    <Card className="bg-card/70 dark:bg-card/50 backdrop-blur-lg">
+    <Card>
         <CardHeader>
             <CardTitle>Welcome to Genesis Pro!</CardTitle>
         </CardHeader>
