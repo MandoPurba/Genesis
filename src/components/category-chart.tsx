@@ -54,13 +54,13 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
 
   if (!chartData || chartData.length === 0) {
     return (
-      <Card className="flex flex-col flex-1">
+      <Card className="flex flex-col">
         <CardHeader>
           <CardTitle>Expenses by Category</CardTitle>
           <CardDescription>Your spending distribution this month.</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center flex-1">
-          <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50">
+          <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50 p-4">
             <p className="text-sm text-muted-foreground">No expense data for this month.</p>
           </div>
         </CardContent>
@@ -69,7 +69,7 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
   }
 
   return (
-    <Card className="flex flex-col flex-1">
+    <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
         <CardTitle>Expenses by Category</CardTitle>
         <CardDescription>Your spending distribution this month.</CardDescription>

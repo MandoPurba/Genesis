@@ -63,7 +63,7 @@ function IconForCategory({ categoryName }: { categoryName: string }) {
 
 export function RecentTransactions({ transactions }: { transactions: Transaction[] }) {
     return (
-        <Card className="lg:col-span-1 flex flex-col">
+        <Card className="flex flex-col flex-1">
             <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>

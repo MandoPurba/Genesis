@@ -11,6 +11,7 @@ import { redirect } from "next/navigation"
 import { OverviewChart } from "@/components/overview-chart"
 import { RecentTransactions } from "@/components/recent-transactions"
 import { formatCurrency } from "@/lib/utils"
+import { CategoryChart, type CategoryExpenseData } from "@/components/category-chart"
 
 // Helper function to get start and end of a month
 const getMonthDateRange = (date: Date) => {
@@ -155,6 +156,19 @@ export default async function OverviewPage() {
       expense
   }));
 
+  // Prepare data for category chart
+  const categoryExpenses = (currentMonthTransactions || [])
+    .filter(t => t.type === 'expense')
+    .reduce((acc, t) => {
+        const categoryName = t.categories?.name || 'Uncategorized';
+        acc[categoryName] = (acc[categoryName] || 0) + t.amount;
+        return acc;
+    }, {} as { [key: string]: number });
+
+  const categoryExpenseData = Object.entries(categoryExpenses)
+      .map(([category, total]) => ({ category, total }))
+      .sort((a, b) => b.total - a.total);
+
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Top Row: Stat Cards */}
@@ -201,8 +215,11 @@ export default async function OverviewPage() {
         {/* Main Chart */}
         <OverviewChart data={overviewChartData} />
         
-        {/* Recent Transactions */}
-        <RecentTransactions transactions={recentTransactions || []} />
+        {/* Right Column */}
+        <div className="flex flex-col gap-4 lg:col-span-1 overflow-hidden">
+            <CategoryChart data={categoryExpenseData} />
+            <RecentTransactions transactions={recentTransactions || []} />
+        </div>
       </div>
     </div>
   )
