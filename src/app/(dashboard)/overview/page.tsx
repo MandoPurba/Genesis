@@ -9,11 +9,11 @@ import { TrendingUp, TrendingDown, DollarSign, Wallet, Activity, BarChart } from
 
 export default function OverviewPage() {
   return (
-    <div className="grid h-full grid-cols-1 gap-8 lg:grid-cols-3">
+    <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Main Content */}
-      <div className="flex flex-col col-span-1 gap-8 lg:col-span-2">
+      <div className="flex flex-col col-span-1 gap-6 lg:col-span-2">
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
@@ -49,7 +49,7 @@ export default function OverviewPage() {
             <CardDescription>A visual representation of your cash flow.</CardDescription>
           </CardHeader>
           <CardContent className="flex items-center justify-center h-full">
-            <div data-ai-hint="bar chart" className="flex items-center justify-center w-full h-64 rounded-lg bg-muted/50">
+            <div data-ai-hint="bar chart" className="flex items-center justify-center w-full h-full rounded-lg bg-muted/50">
               <BarChart className="w-16 h-16 text-muted-foreground/50"/>
             </div>
           </CardContent>
@@ -57,7 +57,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Side Content */}
-      <div className="flex flex-col col-span-1 gap-8">
+      <div className="flex flex-col col-span-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Net Balance</CardTitle>
@@ -90,7 +90,7 @@ export default function OverviewPage() {
             <CardTitle>Expenses by Category</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center h-full">
-             <div data-ai-hint="pie chart" className="flex items-center justify-center w-full h-40 rounded-lg bg-muted/50">
+             <div data-ai-hint="pie chart" className="flex items-center justify-center w-full h-full rounded-lg bg-muted/50">
                <Activity className="w-16 h-16 text-muted-foreground/50"/>
              </div>
           </CardContent>
