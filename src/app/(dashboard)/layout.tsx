@@ -33,9 +33,7 @@ export default async function DashboardLayout({
 
   return (
       <SidebarProvider>
-        {/* The main container has the padding now, creating symmetrical space */}
         <div className="flex h-screen w-full flex-col gap-6 bg-background p-8">
-            {/* Header Content */}
             <header className="flex h-20 shrink-0 items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <SidebarTrigger className="md:hidden" />
@@ -64,9 +62,7 @@ export default async function DashboardLayout({
                 </div>
             </header>
             
-            {/* This wrapper contains sidebar and main content */}
             <div className="relative flex flex-1 gap-8 overflow-hidden">
-              {/* The sidebar is positioned relative to this container */}
               <Sidebar side="left" variant="floating" collapsible="icon" className="!top-0 !bottom-0 !left-0">
                 <SidebarHeader>
                   <Link href="/overview" className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -81,7 +77,6 @@ export default async function DashboardLayout({
                 </SidebarFooter>
               </Sidebar>
 
-              {/* SidebarInset pushes the main content, taking full height and hiding overflow */}
               <SidebarInset className="p-0 m-0 flex-1 overflow-hidden">
                 {children}
               </SidebarInset>
