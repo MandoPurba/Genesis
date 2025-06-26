@@ -63,8 +63,8 @@ export default async function DashboardLayout({
                   </SidebarFooter>
                 </Sidebar>
 
-                <main className="flex flex-1 flex-col overflow-y-auto">
-                    <header className="flex h-20 shrink-0 items-center justify-between gap-4">
+                <main className="flex flex-1 flex-col gap-4 overflow-y-auto">
+                    <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
                             <SidebarTrigger className="md:hidden" />
                             <div className="flex items-baseline gap-2">
@@ -90,7 +90,7 @@ export default async function DashboardLayout({
                                 </Button>
                             </div>
                         </div>
-                    </header>
+                    </div>
                     <div className="flex-1">
                       {children}
                     </div>
