@@ -11,7 +11,7 @@ import Image from "next/image"
 
 export default function OverviewPage() {
   return (
-    <div className="flex h-full flex-col gap-6 overflow-hidden">
+    <div className="grid h-full grid-cols-1 grid-rows-[auto_1fr] gap-6 overflow-hidden">
       {/* Top Row: Stat Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -106,7 +106,7 @@ export default function OverviewPage() {
             <CardHeader>
                 <CardTitle>Profile</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-1 flex-col items-center justify-center text-center">
+            <CardContent className="flex flex-1 flex-col items-center justify-center text-center p-6">
                 <Image src="https://placehold.co/100x100.png" data-ai-hint="person avatar" alt="User Avatar" width={80} height={80} className="rounded-full mx-auto" />
                 <p className="font-semibold mt-4">Carlic Bolomboy</p>
                 <p className="text-sm text-muted-foreground">carlic@gmai.com</p>

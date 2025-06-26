@@ -33,13 +33,13 @@ export default async function DashboardLayout({
 
   return (
       <SidebarProvider>
-        <div className="flex h-screen w-full flex-col gap-6 bg-background p-8">
-            <header className="flex h-20 shrink-0 items-center justify-between gap-4">
+        <div className="flex h-screen w-full flex-col bg-background">
+            <header className="flex h-20 shrink-0 items-center justify-between gap-4 px-8">
                 <div className="flex items-center gap-4">
                     <SidebarTrigger className="md:hidden" />
-                    <div>
+                    <div className="flex items-baseline gap-2">
                         <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
-                        <p className="text-sm text-muted-foreground">Explore information and activity about your finances</p>
+                        <p className="text-sm text-muted-foreground">Welcome to your financial dashboard.</p>
                     </div>
                 </div>
 
@@ -62,7 +62,7 @@ export default async function DashboardLayout({
                 </div>
             </header>
             
-            <div className="flex flex-1 gap-8 overflow-hidden">
+            <div className="flex flex-1 gap-8 overflow-hidden p-8">
               <Sidebar side="left" variant="floating" collapsible="icon">
                 <SidebarContent>
                   <MainNav />
