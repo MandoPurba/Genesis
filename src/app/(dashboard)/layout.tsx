@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Bell, MessageCircle } from "lucide-react"
 import { SupabaseConfigWarning } from "@/components/supabase-config-warning"
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import Link from "next/link"
 
 export default async function DashboardLayout({
@@ -64,11 +64,6 @@ export default async function DashboardLayout({
             
             <div className="flex flex-1 gap-8 overflow-hidden">
               <Sidebar side="left" variant="floating" collapsible="icon">
-                <SidebarHeader>
-                  <Link href="/overview" className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 19.07l-1.41 1.41"/><path d="M19.07 19.07l-1.41-1.41"/><path d="M4.93 4.93l-1.41-1.41"/><path d="M12 6V3"/><path d="M12 21v-3"/><path d="M18 12h3"/><path d="M3 12h3"/></svg>
-                  </Link>
-                </SidebarHeader>
                 <SidebarContent>
                   <MainNav />
                 </SidebarContent>
