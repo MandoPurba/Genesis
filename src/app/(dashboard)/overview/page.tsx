@@ -223,7 +223,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Income</CardTitle>
-            <DollarSign className="w-5 h-5 text-muted-foreground" />
+            <DollarSign className="w-5 h-5 text-success" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(currentTotals.income)}</div>
@@ -235,7 +235,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
-            <Wallet className="w-5 h-5 text-muted-foreground" />
+            <Wallet className="w-5 h-5 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(currentTotals.expense)}</div>
