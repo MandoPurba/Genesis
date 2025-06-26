@@ -27,12 +27,21 @@ export default async function BudgetsPage() {
     redirect('/login');
   }
 
+  const createBudgetsTableSql = `CREATE TABLE budgets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  category_id UUID REFERENCES categories(id) ON DELETE CASCADE NOT NULL,
+  amount NUMERIC NOT NULL,
+  month INT NOT NULL,
+  year INT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, category_id, year, month)
+);`;
+
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth(); // 0-11 for Date object
 
-  // Note: This assumes a 'budgets' table exists in your database.
-  // An error message is handled below if it doesn't.
   const { data: budgets, error: budgetsError } = await supabase
     .from('budgets')
     .select('id, amount, categories (id, name)')
@@ -54,16 +63,7 @@ export default async function BudgetsPage() {
                 <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground">Please run the following command in your Supabase SQL Editor to set it up:</p>
                     <pre className="p-4 bg-muted text-sm rounded-md overflow-x-auto">
-{`CREATE TABLE budgets (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
-  category_id UUID REFERENCES categories(id) ON DELETE CASCADE NOT NULL,
-  amount NUMERIC NOT NULL,
-  month INT NOT NULL,
-  year INT NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, category_id, year, month)
-);`}
+                      {createBudgetsTableSql}
                     </pre>
                 </CardContent>
             </Card>
