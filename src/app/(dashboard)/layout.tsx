@@ -80,12 +80,12 @@ export default async function DashboardLayout({
                   </div>
               </div>
 
-              <div className="flex flex-1 gap-8 overflow-hidden pt-4">
+              <div className="flex flex-1 gap-8 overflow-hidden pt-8">
                 <Sidebar side="left" variant="floating" collapsible="icon" className="z-40">
-                  <SidebarContent className="pt-6">
+                  <SidebarContent className="pt-2">
                     <MainNav />
                   </SidebarContent>
-                  <SidebarFooter className="pb-6">
+                  <SidebarFooter className="pb-2">
                     <UserNav user={userForNav} />
                   </SidebarFooter>
                 </Sidebar>
