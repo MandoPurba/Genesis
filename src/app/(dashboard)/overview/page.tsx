@@ -11,7 +11,7 @@ import Image from "next/image"
 
 export default function OverviewPage() {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
       {/* Stat Cards */}
       <Card>
         <CardHeader>

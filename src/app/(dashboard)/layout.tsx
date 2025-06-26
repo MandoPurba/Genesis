@@ -32,54 +32,61 @@ export default async function DashboardLayout({
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
 
   return (
-    <SidebarProvider>
-      <Sidebar side="left" variant="floating" collapsible="icon">
-        <SidebarHeader>
-           <Link href="/overview" className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 19.07l-1.41 1.41"/><path d="M19.07 19.07l-1.41-1.41"/><path d="M4.93 4.93l-1.41-1.41"/><path d="M12 6V3"/><path d="M12 21v-3"/><path d="M18 12h3"/><path d="M3 12h3"/></svg>
-          </Link>
-        </SidebarHeader>
-        <SidebarContent>
-          <MainNav />
-        </SidebarContent>
-        <SidebarFooter>
-          <UserNav user={user} />
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            {/* Header Content */}
-            <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <SidebarTrigger className="md:hidden" />
-                    <div>
-                        <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
-                        <p className="text-sm text-muted-foreground">Explore information and activity about your finances</p>
-                    </div>
-                </div>
+      <SidebarProvider>
+        {/* The sidebar is fixed and will be positioned relative to the viewport. 
+            We manually adjust its top position to appear below the header. */}
+        <Sidebar side="left" variant="floating" collapsible="icon" className="top-[calc(5rem+1.5rem)] bottom-8">
+          <SidebarHeader>
+             <Link href="/overview" className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9z"/><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.07 4.93l-1.41 1.41"/><path d="M4.93 19.07l-1.41 1.41"/><path d="M19.07 19.07l-1.41-1.41"/><path d="M4.93 4.93l-1.41-1.41"/><path d="M12 6V3"/><path d="M12 21v-3"/><path d="M18 12h3"/><path d="M3 12h3"/></svg>
+            </Link>
+          </SidebarHeader>
+          <SidebarContent>
+            <MainNav />
+          </SidebarContent>
+          <SidebarFooter>
+            <UserNav user={user} />
+          </SidebarFooter>
+        </Sidebar>
 
-                <div className="flex items-center gap-4">
-                    <div className="relative hidden md:block">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input type="search" placeholder="Search..." className="pl-9 bg-card/80 rounded-full" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <ThemeToggle />
-                        <Button variant="ghost" size="icon" className="rounded-full">
-                            <MessageCircle className="h-5 w-5" />
-                            <span className="sr-only">Messages</span>
-                        </Button>
-                        <Button variant="ghost" size="icon" className="rounded-full">
-                            <Bell className="h-5 w-5" />
-                            <span className="sr-only">Notifications</span>
-                        </Button>
-                    </div>
-                </div>
-            </div>
-            {/* Page Content */}
-            {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        {/* SidebarInset pushes the main content to the right, avoiding the sidebar. */}
+        <SidebarInset className="p-0 m-0">
+          <div className="flex h-screen w-full flex-col overflow-hidden bg-background p-8">
+              {/* Header Content */}
+              <header className="flex h-20 items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                      <SidebarTrigger className="md:hidden" />
+                      <div>
+                          <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
+                          <p className="text-sm text-muted-foreground">Explore information and activity about your finances</p>
+                      </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                      <div className="relative hidden md:block">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input type="search" placeholder="Search..." className="pl-9 bg-card/80 rounded-full" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                          <ThemeToggle />
+                          <Button variant="ghost" size="icon" className="rounded-full">
+                              <MessageCircle className="h-5 w-5" />
+                              <span className="sr-only">Messages</span>
+                          </Button>
+                          <Button variant="ghost" size="icon" className="rounded-full">
+                              <Bell className="h-5 w-5" />
+                              <span className="sr-only">Notifications</span>
+                          </Button>
+                      </div>
+                  </div>
+              </header>
+              
+              {/* Page Content wrapper. flex-1 allows it to take up remaining vertical space. */}
+              <main className="flex-1 pt-6 overflow-hidden">
+                {children}
+              </main>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
   )
 }
