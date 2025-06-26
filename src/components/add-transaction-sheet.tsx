@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useState, useTransition } from "react"
+import { useActionState, useEffect, useState } from "react"
 import { useFormStatus } from "react-dom"
 import { addTransaction } from "@/app/(dashboard)/transactions/actions"
 import {
@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/datepicker"
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 type Category = { id: string; name: string; type: 'income' | 'expense' }
 
@@ -40,6 +41,7 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
 
   const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense')
   const [date, setDate] = useState<Date | undefined>(new Date())
+  const [amountValue, setAmountValue] = useState('')
   const [key, setKey] = useState(Date.now()); // Used to reset form
 
   const filteredCategories = categories.filter(c => c.type === transactionType)
@@ -51,11 +53,17 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
       // Reset form state by changing key
       setDate(new Date())
       setTransactionType('expense')
+      setAmountValue('')
       setKey(Date.now())
     } else if (state?.error) {
       toast({ title: "Error", description: state.error, variant: "destructive" })
     }
   }, [state, toast])
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^0-9]/g, '');
+    setAmountValue(rawValue);
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -95,10 +103,18 @@ export function AddTransactionSheet({ categories }: { categories: Category[] }) 
             </RadioGroup>
             
             <input type="hidden" name="date" value={date?.toISOString()} />
+            <input type="hidden" name="amount" value={amountValue} />
 
             <div>
-              <Label htmlFor="amount">Amount</Label>
-              <Input id="amount" name="amount" type="number" step="1" placeholder="e.g., 50000" required />
+              <Label htmlFor="amount-display">Amount</Label>
+              <Input
+                id="amount-display"
+                type="text"
+                placeholder="e.g., Rp 50.000"
+                value={amountValue === '' ? '' : formatCurrency(Number(amountValue))}
+                onChange={handleAmountChange}
+                required
+              />
               {state?.errors?.amount && <p className="text-destructive text-sm mt-1">{state.errors.amount[0]}</p>}
             </div>
 
