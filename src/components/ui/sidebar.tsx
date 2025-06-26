@@ -21,9 +21,9 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "9.8rem"
+const SIDEBAR_WIDTH = "9.5rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3.3rem"
+const SIDEBAR_WIDTH_ICON = "3.1rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {
@@ -471,7 +471,7 @@ const SidebarMenu = React.forwardRef<
   <ul
     ref={ref}
     data-sidebar="menu"
-    className={cn("flex w-full min-w-0 flex-col gap-2 items-center group-data-[state=expanded]:items-stretch", className)}
+    className={cn("flex w-full min-w-0 flex-col gap-4 items-center group-data-[state=expanded]:items-stretch", className)}
     {...props}
   />
 ))
