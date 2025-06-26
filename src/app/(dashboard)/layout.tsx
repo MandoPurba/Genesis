@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Search, Bell, MessageCircle } from "lucide-react"
 import { SupabaseConfigWarning } from "@/components/supabase-config-warning"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import Link from "next/link"
 import { MobileBlocker } from "@/components/mobile-blocker"
 
 export default async function DashboardLayout({
@@ -52,8 +51,36 @@ export default async function DashboardLayout({
   return (
       <MobileBlocker>
         <SidebarProvider>
-          <div className="flex h-screen w-full flex-col bg-background">
-              <div className="flex flex-1 gap-8 overflow-hidden p-8">
+          <div className="flex h-screen w-full flex-col bg-background p-8">
+              <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                      <SidebarTrigger className="md:hidden" />
+                      <div className="flex items-baseline gap-2">
+                          <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
+                          <p className="text-sm text-muted-foreground">Welcome to your financial dashboard.</p>
+                      </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                      <div className="relative hidden md:block">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input type="search" placeholder="Search..." className="pl-9 bg-card/80 rounded-full" />
+                      </div>
+                      <div className="flex items-center gap-2">
+                          <ThemeToggle />
+                          <Button variant="ghost" size="icon" className="rounded-full">
+                              <MessageCircle className="h-5 w-5" />
+                              <span className="sr-only">Messages</span>
+                          </Button>
+                          <Button variant="ghost" size="icon" className="rounded-full">
+                              <Bell className="h-5 w-5" />
+                              <span className="sr-only">Notifications</span>
+                          </Button>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="flex flex-1 gap-8 overflow-hidden pt-4">
                 <Sidebar side="left" variant="floating" collapsible="icon" className="z-40">
                   <SidebarContent className="pt-6">
                     <MainNav />
@@ -63,37 +90,8 @@ export default async function DashboardLayout({
                   </SidebarFooter>
                 </Sidebar>
 
-                <main className="flex flex-1 flex-col gap-4 overflow-y-auto">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <SidebarTrigger className="md:hidden" />
-                            <div className="flex items-baseline gap-2">
-                                <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
-                                <p className="text-sm text-muted-foreground">Welcome to your financial dashboard.</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="relative hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input type="search" placeholder="Search..." className="pl-9 bg-card/80 rounded-full" />
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <ThemeToggle />
-                                <Button variant="ghost" size="icon" className="rounded-full">
-                                    <MessageCircle className="h-5 w-5" />
-                                    <span className="sr-only">Messages</span>
-                                </Button>
-                                <Button variant="ghost" size="icon" className="rounded-full">
-                                    <Bell className="h-5 w-5" />
-                                    <span className="sr-only">Notifications</span>
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex-1">
-                      {children}
-                    </div>
+                <main className="flex-1 overflow-y-auto">
+                  {children}
                 </main>
             </div>
           </div>
