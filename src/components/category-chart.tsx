@@ -54,22 +54,22 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
 
   if (!chartData || chartData.length === 0) {
     return (
-      <Card className="flex flex-col">
-        <CardHeader>
-          <CardTitle>Expenses by Category</CardTitle>
-          <CardDescription>Your spending distribution this month.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center flex-1">
-          <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50 p-4">
-            <p className="text-sm text-muted-foreground">No expense data for this month.</p>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="flex flex-col h-full">
+            <CardHeader>
+              <CardTitle>Expenses by Category</CardTitle>
+              <CardDescription>Your spending distribution this month.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center flex-1">
+              <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50 p-4">
+                <p className="text-sm text-muted-foreground">No expense data for this month.</p>
+              </div>
+            </CardContent>
+        </div>
     )
   }
 
   return (
-    <Card className="flex flex-col">
+    <div className="flex flex-col h-full">
       <CardHeader className="items-center pb-0">
         <CardTitle>Expenses by Category</CardTitle>
         <CardDescription>Your spending distribution this month.</CardDescription>
@@ -110,6 +110,6 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
           </PieChart>
         </ChartContainer>
       </CardContent>
-    </Card>
+    </div>
   )
 }

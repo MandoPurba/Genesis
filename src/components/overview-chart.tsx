@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
   Card,
@@ -14,6 +15,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 
 const chartConfig = {
@@ -27,7 +29,12 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function OverviewChart({ data }: { data: { date: string; income: number; expense: number }[] }) {
+type OverviewChartProps = {
+  data: { date: string; income: number; expense: number }[];
+  range: 'monthly' | 'yearly';
+}
+
+export function OverviewChart({ data, range }: OverviewChartProps) {
   // Y-axis tick formatter
   const formatYAxisTick = (tick: number) => {
     if (tick >= 1000000) {
@@ -39,16 +46,33 @@ export function OverviewChart({ data }: { data: { date: string; income: number; 
     return `Rp${tick}`
   }
 
+  const formatXAxisTick = (value: string) => {
+    if (range === 'monthly') {
+      return value.split(" ")[1] // "Jan 01" -> "01"
+    }
+    return value; // "Jan", "Feb", etc.
+  }
+
   if (!data || data.length === 0 || data.every(d => d.income === 0 && d.expense === 0)) {
     return (
       <Card className="flex flex-col lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Income vs Expenses</CardTitle>
-          <CardDescription>A visual representation of your cash flow this month.</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Income vs Expenses</CardTitle>
+            <CardDescription>A visual representation of your cash flow this {range === 'monthly' ? 'month' : 'year'}.</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant={range === 'monthly' ? 'default' : 'ghost'} size="sm" asChild>
+              <Link href="/overview?range=monthly">Monthly</Link>
+            </Button>
+            <Button variant={range === 'yearly' ? 'default' : 'ghost'} size="sm" asChild>
+              <Link href="/overview?range=yearly">Yearly</Link>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex items-center justify-center flex-1">
           <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50">
-            <p className="text-muted-foreground">No transaction data for this month to display the chart.</p>
+            <p className="text-muted-foreground">No transaction data for this period to display the chart.</p>
           </div>
         </CardContent>
       </Card>
@@ -57,10 +81,20 @@ export function OverviewChart({ data }: { data: { date: string; income: number; 
 
   return (
     <Card className="flex flex-col lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Income vs Expenses</CardTitle>
-        <CardDescription>Your income and expense trend for this month.</CardDescription>
-      </CardHeader>
+       <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Income vs Expenses</CardTitle>
+            <CardDescription>Your income and expense trend for this {range === 'monthly' ? 'month' : 'year'}.</CardDescription>
+          </div>
+          <div className="flex items-center gap-2 p-1 bg-muted rounded-md">
+            <Button variant={range === 'monthly' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
+              <Link href="/overview">Monthly</Link>
+            </Button>
+            <Button variant={range === 'yearly' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
+              <Link href="/overview?range=yearly">Yearly</Link>
+            </Button>
+          </div>
+        </CardHeader>
       <CardContent className="flex-1 pb-0 pl-2">
         <ChartContainer config={chartConfig} className="h-full w-full">
           <LineChart
@@ -79,7 +113,7 @@ export function OverviewChart({ data }: { data: { date: string; income: number; 
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.split(" ")[1]} // "Jan 01" -> "01"
+              tickFormatter={formatXAxisTick}
             />
              <YAxis
               tickLine={false}
