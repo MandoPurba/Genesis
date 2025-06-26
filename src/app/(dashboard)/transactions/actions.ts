@@ -51,7 +51,7 @@ export async function addTransaction(prevState: any, formData: FormData) {
   return { success: 'Transaction added successfully!' }
 }
 
-export const TRANSACTIONS_PER_PAGE = 100;
+const TRANSACTIONS_PER_PAGE = 100;
 
 export async function fetchTransactions(page: number) {
   const supabase = createClient()

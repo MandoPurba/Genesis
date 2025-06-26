@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
-import { fetchTransactions, TRANSACTIONS_PER_PAGE } from "@/app/(dashboard)/transactions/actions"
+import { fetchTransactions } from "@/app/(dashboard)/transactions/actions"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
@@ -19,6 +19,8 @@ type Transaction = {
       name: string;
   } | null;
 }
+
+const TRANSACTIONS_PER_PAGE = 100;
 
 export function TransactionsTable({ initialTransactions }: { initialTransactions: Transaction[] }) {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions)
