@@ -25,9 +25,15 @@ export default async function TransactionsPage() {
   }
 
   // Fetch initial data for the table and the form
-  const initialTransactions = await fetchTransactions(0);
-  const { data: categoriesData } = await supabase.from('categories').select('*').order('name');
-  const categories = categoriesData || [];
+  const [initialTransactions, categoriesData, accountsData] = await Promise.all([
+    fetchTransactions(0),
+    supabase.from('categories').select('*').order('name'),
+    supabase.from('accounts').select('id, name').order('name')
+  ]);
+
+  const categories = categoriesData.data || [];
+  const accounts = accountsData.data || [];
+
 
   // --- New logic to get budget and spending data ---
   const now = new Date();
@@ -85,7 +91,7 @@ export default async function TransactionsPage() {
           <CardTitle>Transactions</CardTitle>
           <CardDescription>View, search, and manage all your transactions.</CardDescription>
         </div>
-        <AddTransactionSheet categories={categories} budgetInfo={budgetInfo} />
+        <AddTransactionSheet categories={categories} accounts={accounts} budgetInfo={budgetInfo} />
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-0">
         <TransactionsTable initialTransactions={initialTransactions || []} />

@@ -25,6 +25,7 @@ import { PlusCircle, AlertCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
 type Category = { id: number; name: string; type: 'income' | 'expense' }
+type Account = { id: number; name: string; }
 type BudgetInfo = { [categoryId: number]: { budget: number; spent: number; } }
 
 function SubmitButton() {
@@ -36,7 +37,7 @@ function SubmitButton() {
   )
 }
 
-export function AddTransactionSheet({ categories, budgetInfo }: { categories: Category[]; budgetInfo: BudgetInfo }) {
+export function AddTransactionSheet({ categories, accounts, budgetInfo }: { categories: Category[]; accounts: Account[]; budgetInfo: BudgetInfo }) {
   const { toast } = useToast()
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addTransaction, null)
@@ -156,6 +157,21 @@ export function AddTransactionSheet({ categories, budgetInfo }: { categories: Ca
             <div>
               <Label>Date</Label>
               <DatePicker date={date} setDate={setDate} disabled={(date) => date > new Date()} />
+            </div>
+
+            <div>
+              <Label htmlFor="accountId">Account</Label>
+              <Select name="accountId" required>
+                <SelectTrigger id="accountId">
+                  <SelectValue placeholder="Select an account" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map(account => (
+                    <SelectItem key={account.id} value={account.id.toString()}>{account.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {state?.errors?.accountId && <p className="text-destructive text-sm mt-1">{state.errors.accountId[0]}</p>}
             </div>
 
             <div>

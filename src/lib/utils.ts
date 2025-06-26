@@ -13,7 +13,9 @@ import {
     Ticket,
     TrendingUp,
     Utensils,
-    BookOpen
+    BookOpen,
+    Wallet,
+    Smartphone
 } from "lucide-react"
 import React from "react"
 
@@ -55,7 +57,19 @@ export const categoryIcons: { [key: string]: React.ElementType } = {
     'Uncategorized': MoreHorizontal,
 };
 
+export const accountIcons: { [key: string]: React.ElementType } = {
+    'Bank Account': Landmark,
+    'Cash': Wallet,
+    'E-Wallet': Smartphone,
+    'Other': MoreHorizontal,
+};
+
 export function IconForCategory({ categoryName, className }: { categoryName: string, className?: string }) {
     const Icon = categoryIcons[categoryName] || MoreHorizontal;
+    return React.createElement(Icon, { className: cn("h-5 w-5", className) });
+}
+
+export function IconForAccountType({ accountType, className }: { accountType: string, className?: string }) {
+    const Icon = accountIcons[accountType] || MoreHorizontal;
     return React.createElement(Icon, { className: cn("h-5 w-5", className) });
 }

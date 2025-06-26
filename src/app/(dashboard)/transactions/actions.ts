@@ -8,6 +8,7 @@ const TransactionFormSchema = z.object({
   amount: z.coerce.number().positive({ message: "Amount must be greater than 0." }),
   date: z.coerce.date(),
   categoryId: z.coerce.number({ required_error: "Please select a category." }),
+  accountId: z.coerce.number({ required_error: "Please select an account." }),
   description: z.string().max(100, "Description is too long.").optional(),
 });
 
@@ -23,6 +24,7 @@ export async function addTransaction(prevState: any, formData: FormData) {
     amount: formData.get('amount'),
     date: formData.get('date'),
     categoryId: formData.get('categoryId'),
+    accountId: formData.get('accountId'),
     description: formData.get('description'),
   })
 
@@ -30,25 +32,51 @@ export async function addTransaction(prevState: any, formData: FormData) {
     return { error: 'Invalid form data. Please check the fields.', errors: validatedFields.error.flatten().fieldErrors }
   }
 
-  const { type, amount, date, categoryId, description } = validatedFields.data
+  const { type, amount, date, categoryId, accountId, description } = validatedFields.data
 
-  const { error } = await supabase.from('transactions').insert({
+  const { error: transactionError } = await supabase.from('transactions').insert({
     user_id: user.id,
     type,
     amount,
     date: date.toISOString(),
     category_id: categoryId,
+    account_id: accountId,
     description: description || null,
   })
 
-  if (error) {
-    console.error('Supabase insert error:', error)
-    return { error: `Database error: ${error.message}` }
+  if (transactionError) {
+    console.error('Supabase transaction insert error:', transactionError)
+    return { error: `Database error: ${transactionError.message}` }
+  }
+  
+  // Update account balance
+  const { data: account, error: accountError } = await supabase
+    .from('accounts')
+    .select('balance')
+    .eq('id', accountId)
+    .single()
+
+  if (accountError) {
+    console.error('Error fetching account for balance update:', accountError)
+    return { success: 'Transaction added, but failed to update account balance.' }
+  }
+
+  const newBalance = type === 'income' ? account.balance + amount : account.balance - amount;
+
+  const { error: updateError } = await supabase
+    .from('accounts')
+    .update({ balance: newBalance })
+    .eq('id', accountId)
+
+  if (updateError) {
+    console.error('Error updating account balance:', updateError)
+    return { success: 'Transaction added, but failed to update account balance.' }
   }
 
   revalidatePath('/transactions')
   revalidatePath('/overview')
   revalidatePath('/budgets')
+  revalidatePath('/accounts')
   return { success: 'Transaction added successfully!' }
 }
 
