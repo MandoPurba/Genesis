@@ -11,10 +11,10 @@ import {
 } from "lucide-react"
 
 const links = [
-  { href: "/dashboard/overview", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/transactions", label: "Transactions", icon: Receipt },
-  { href: "/dashboard/budgets", label: "Budgets", icon: Target },
-  { href: "/dashboard/accounts", label: "Accounts", icon: Landmark },
+  { href: "/overview", label: "Overview", icon: LayoutDashboard },
+  { href: "/transactions", label: "Transactions", icon: Receipt },
+  { href: "/budgets", label: "Budgets", icon: Target },
+  { href: "/accounts", label: "Accounts", icon: Landmark },
 ]
 
 export function MainNav({
