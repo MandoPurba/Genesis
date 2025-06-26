@@ -29,7 +29,7 @@ export function UserNav({ user }: { user: User }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar className="w-10 h-10 cursor-pointer">
+        <Avatar className="h-12 w-12 cursor-pointer">
           <AvatarImage src={user.user_metadata.avatar_url} alt="User avatar" />
           <AvatarFallback>{emailInitial}</AvatarFallback>
         </Avatar>

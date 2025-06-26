@@ -217,7 +217,7 @@ const Sidebar = React.forwardRef<
         ref={ref}
         data-sidebar="sidebar"
         className={cn(
-          "group relative flex-shrink-0 text-sidebar-foreground",
+          "group relative flex-shrink-0 text-sidebar-foreground z-20",
           "duration-200 transition-[width] ease-linear",
           "w-[--sidebar-width]",
           "data-[state=collapsed]:w-[--sidebar-width-icon]",
@@ -352,7 +352,7 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn("flex flex-col items-center gap-2 p-2 mt-auto group-data-[state=expanded]:p-4", className)}
+      className={cn("flex flex-col items-center gap-2 p-4 mt-auto", className)}
       {...props}
     />
   )
@@ -383,7 +383,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto pt-10 group-data-[collapsible=icon]:overflow-hidden group-data-[state=expanded]:p-2",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto pt-4 group-data-[collapsible=icon]:overflow-hidden group-data-[state=expanded]:p-2",
         className
       )}
       {...props}
@@ -471,7 +471,7 @@ const SidebarMenu = React.forwardRef<
   <ul
     ref={ref}
     data-sidebar="menu"
-    className={cn("flex w-full min-w-0 flex-col gap-1 items-center group-data-[state=expanded]:items-stretch", className)}
+    className={cn("flex w-full min-w-0 flex-col gap-2 items-center group-data-[state=expanded]:items-stretch", className)}
     {...props}
   />
 ))
