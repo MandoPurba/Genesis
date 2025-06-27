@@ -32,10 +32,10 @@ export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsP
                         <TabsTrigger value="recent">Recent</TabsTrigger>
                     </TabsList>
                 </div>
-                <TabsContent value="categories" className="flex-1 overflow-hidden p-0 m-0">
+                <TabsContent value="categories" className="flex-1 overflow-y-auto p-0 m-0">
                     <CategoryChart data={categoryData} />
                 </TabsContent>
-                <TabsContent value="recent" className="flex-1 overflow-hidden p-0 m-0">
+                <TabsContent value="recent" className="flex-1 overflow-y-auto p-0 m-0">
                     <RecentTransactions transactions={transactions} />
                 </TabsContent>
             </Tabs>
