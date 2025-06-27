@@ -240,9 +240,11 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       </div>
 
       {/* Bottom Row: Charts & Other Info */}
-      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3 overflow-hidden">
+      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3 overflow-hidden min-h-0">
         {/* Main Chart */}
-        <OverviewChart data={overviewChartData} range={range} />
+        <div className="lg:col-span-2">
+          <OverviewChart data={overviewChartData} range={range} />
+        </div>
         
         {/* Right Column */}
         <div className="lg:col-span-1">
