@@ -92,19 +92,32 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     });
     const incomeExpenseData = Array.from(monthlyDataMap.entries()).map(([month, totals]) => ({ month, ...totals }));
 
-    // Spending by Category Data (for Bubble Chart)
-    const categorySpending = periodTransactions
-        .filter(t => t.type === 'expense')
-        .reduce((acc, t) => {
-            const categoryName = t.categories?.name || 'Uncategorized';
-            acc[categoryName] = (acc[categoryName] || 0) + t.amount;
-            return acc;
-        }, {} as { [key: string]: number });
-    
-    const spendingByCategoryData = Object.entries(categorySpending)
-        .map(([name, total]) => ({ name, total }))
-        .sort((a,b) => b.total - a.total);
+    // Spending by Category Trend Data (for multi-line chart)
+    const categoryMonthlySpending: { [month: string]: { [category: string]: number } } = {};
+    monthNames.forEach(m => categoryMonthlySpending[m] = {});
 
+    const allCategoryNames = new Set<string>();
+
+    periodTransactions.forEach(t => {
+        if (t.type === 'expense') {
+            const monthName = monthNames[new Date(t.date).getUTCMonth()];
+            const categoryName = t.categories?.name || 'Uncategorized';
+            allCategoryNames.add(categoryName);
+            if (categoryMonthlySpending[monthName]) {
+                categoryMonthlySpending[monthName][categoryName] = (categoryMonthlySpending[monthName][categoryName] || 0) + t.amount;
+            }
+        }
+    });
+
+    const spendingByCategoryTrendData = monthNames.map(month => {
+        const monthData: { [key: string]: string | number } = { month };
+        allCategoryNames.forEach(catName => {
+            monthData[catName] = categoryMonthlySpending[month][catName] || 0;
+        });
+        return monthData;
+    });
+
+    const categoryListForChart = Array.from(allCategoryNames);
 
     return (
         <div className="space-y-6">
@@ -115,7 +128,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <IncomeVsExpenseReport data={incomeExpenseData} period={period} />
                 <SpendingByCategoryReport 
-                    data={spendingByCategoryData} 
+                    data={spendingByCategoryTrendData} 
+                    categories={categoryListForChart}
                     period={period} 
                 />
             </div>
