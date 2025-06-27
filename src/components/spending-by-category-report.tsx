@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
 import {
   Card,
   CardContent,
@@ -52,16 +52,39 @@ export function SpendingByCategoryReport({ data, categories, period }: ReportPro
     return formatCurrency(tick)
   }
 
+  // Sanitize category name for ID
+  const sanitizeForId = (name: string) => name.replace(/[^a-zA-Z0-9]/g, '');
+
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
         <CardTitle>Spending Category Trends</CardTitle>
-        <CardDescription>Monthly spending breakdown for {period === 'this_year' ? 'this year' : 'last year'}.</CardDescription>
+        <CardDescription>Monthly spending composition for {period === 'this_year' ? 'this year' : 'last year'}.</CardDescription>
       </CardHeader>
       <CardContent className="pl-2 flex-1">
         {hasData ? (
           <ChartContainer config={chartConfig} className="w-full h-full min-h-[300px]">
-            <LineChart accessibilityLayer data={data}>
+            <AreaChart accessibilityLayer data={data}>
+                <defs>
+                    {categories.map((category) => {
+                        const color = chartConfig[category]?.color
+                        if (!color) return null;
+                        return (
+                            <linearGradient
+                                key={category}
+                                id={`color-${sanitizeForId(category)}`}
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                            >
+                                <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                                <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+                            </linearGradient>
+                        )
+                    })}
+                </defs>
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
                 <YAxis tickFormatter={formatYAxisTick} tickLine={false} axisLine={false} tickMargin={8} />
@@ -83,16 +106,18 @@ export function SpendingByCategoryReport({ data, categories, period }: ReportPro
                 />
                 <Legend />
                 {categories.map((category) => (
-                  <Line
+                  <Area
                     key={category}
                     type="monotone"
                     dataKey={category}
-                    stroke={chartConfig[category]?.color}
+                    stackId="1" 
                     strokeWidth={2}
-                    dot={false}
+                    stroke={chartConfig[category]?.color}
+                    fill={`url(#color-${sanitizeForId(category)})`}
+                    fillOpacity={1}
                   />
                 ))}
-            </LineChart>
+            </AreaChart>
           </ChartContainer>
         ) : (
           <div className="flex h-full min-h-[300px] w-full items-center justify-center rounded-lg bg-muted/50 p-4 text-center">
