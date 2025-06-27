@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link"
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
 import {
   Card,
   CardContent,
@@ -60,18 +60,28 @@ export function IncomeVsExpenseReport({ data, period, range, spendingPeriod }: R
       <CardContent className="pb-4 pl-2 flex-1">
         {data.some(d => d.income > 0 || d.expense > 0) ? (
             <ChartContainer config={chartConfig} className="w-full h-full min-h-[300px]">
-            <LineChart accessibilityLayer data={data}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickFormatter={formatYAxisTick} tickLine={false} axisLine={false} tickMargin={8} />
-                <ChartTooltip
-                    cursor={true}
-                    content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value))} />}
-                />
-                <Legend />
-                <Line type="monotone" dataKey="income" stroke="var(--color-income)" strokeWidth={2} name="Income" dot={false} />
-                <Line type="monotone" dataKey="expense" stroke="var(--color-expense)" strokeWidth={2} name="Expense" dot={false} />
-            </LineChart>
+              <AreaChart accessibilityLayer data={data}>
+                  <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--color-income)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="var(--color-income)" stopOpacity={0.1} />
+                      </linearGradient>
+                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--color-expense)" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="var(--color-expense)" stopOpacity={0.1} />
+                      </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                  <YAxis tickFormatter={formatYAxisTick} tickLine={false} axisLine={false} tickMargin={8} />
+                  <ChartTooltip
+                      cursor={true}
+                      content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value))} />}
+                  />
+                  <Legend />
+                  <Area type="monotone" dataKey="income" stroke="var(--color-income)" fill="url(#colorIncome)" strokeWidth={2} name="Income" dot={false} />
+                  <Area type="monotone" dataKey="expense" stroke="var(--color-expense)" fill="url(#colorExpense)" strokeWidth={2} name="Expense" dot={false} />
+              </AreaChart>
             </ChartContainer>
         ) : (
             <div className="flex h-full min-h-[300px] w-full items-center justify-center rounded-lg bg-muted/50 p-4 text-center">
