@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Line, LineChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
 import {
   Card,
   CardContent,
@@ -41,7 +41,7 @@ export function IncomeVsExpenseReport({ data, period }: ReportProps) {
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <CardTitle>Income vs. Expense</CardTitle>
+                <CardTitle>Income vs. Expense Trend</CardTitle>
                 <CardDescription>Comparison for {period === 'this_year' ? 'this year' : 'last year'}.</CardDescription>
             </div>
             <div className="flex items-center gap-2 pt-2 sm:pt-0">
@@ -57,17 +57,18 @@ export function IncomeVsExpenseReport({ data, period }: ReportProps) {
       <CardContent className="pb-4 pl-2 flex-1">
         {data.some(d => d.income > 0 || d.expense > 0) ? (
             <ChartContainer config={chartConfig} className="w-full h-full min-h-[300px]">
-            <BarChart accessibilityLayer data={data}>
+            <LineChart accessibilityLayer data={data}>
                 <CartesianGrid vertical={false} />
                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
                 <YAxis tickFormatter={formatYAxisTick} tickLine={false} axisLine={false} tickMargin={8} />
                 <ChartTooltip
                     cursor={true}
-                    content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value))} nameKey="name" />}
+                    content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value))} />}
                 />
-                <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} name="Income" />
-                <Bar dataKey="expense" fill="var(--color-expense)" radius={[4, 4, 0, 0]} name="Expense" />
-            </BarChart>
+                <Legend />
+                <Line type="monotone" dataKey="income" stroke="var(--color-income)" strokeWidth={2} name="Income" dot={false} />
+                <Line type="monotone" dataKey="expense" stroke="var(--color-expense)" strokeWidth={2} name="Expense" dot={false} />
+            </LineChart>
             </ChartContainer>
         ) : (
             <div className="flex h-full min-h-[300px] w-full items-center justify-center rounded-lg bg-muted/50 p-4 text-center">
