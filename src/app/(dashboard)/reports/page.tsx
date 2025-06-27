@@ -10,6 +10,7 @@ import { DollarSign, TrendingDown, TrendingUp } from "lucide-react"
 import { redirect } from "next/navigation"
 import { formatCurrency } from "@/lib/utils"
 import { SpendingReportChart } from "@/components/spending-report-chart"
+import { NetWorthReportChart } from "@/components/net-worth-report-chart"
 
 // Helper function to get start and end of a month
 const getMonthDateRange = (date: Date) => {
@@ -23,7 +24,7 @@ const getMonthDateRange = (date: Date) => {
     };
 };
 
-export default async function ReportsPage() {
+export default async function ReportsPage({ searchParams }: { searchParams: { range?: string } }) {
     const supabase = createClient();
     if (!supabase) {
         return <div>Supabase not configured.</div>;
@@ -34,25 +35,29 @@ export default async function ReportsPage() {
         redirect('/login');
     }
 
-    // For now, we'll just report on the current month.
-    // We can add date range selection later.
-    const now = new Date();
-    const currentMonthRange = getMonthDateRange(now);
-
-    const { data: transactions, error } = await supabase
+    // --- Fetch ALL transactions for all reports ---
+    const { data: allTransactions, error } = await supabase
         .from('transactions')
-        .select('type, amount, categories(id, name)')
+        .select('date, type, amount, categories(id, name)')
         .eq('user_id', user.id)
-        .gte('date', currentMonthRange.start)
-        .lte('date', currentMonthRange.end)
+        .order('date', { ascending: true }) // Order chronologically for net worth calculation
 
     if (error) {
         console.error("Error fetching transactions for reports:", error);
         return <div>Error loading report data.</div>
     }
 
-    // --- Calculate Summary Stats ---
-    const { totalIncome, totalExpense } = (transactions || []).reduce(
+    const transactions = allTransactions || [];
+    const now = new Date();
+
+    // --- Monthly Report Calculations ---
+    const currentMonthRange = getMonthDateRange(now);
+    const monthlyTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate.toISOString() >= currentMonthRange.start && tDate.toISOString() <= currentMonthRange.end;
+    });
+
+    const { totalIncome, totalExpense } = monthlyTransactions.reduce(
         (acc, t) => {
             if (t.type === 'income') acc.totalIncome += t.amount;
             else if (t.type === 'expense') acc.totalExpense += t.amount;
@@ -62,8 +67,7 @@ export default async function ReportsPage() {
     );
     const netFlow = totalIncome - totalExpense;
 
-    // --- Process data for charts ---
-    const spendingByCategory = (transactions || [])
+    const spendingByCategory = monthlyTransactions
         .filter(t => t.type === 'expense' && t.categories)
         .reduce((acc, t) => {
             const categoryName = t.categories!.name;
@@ -73,16 +77,58 @@ export default async function ReportsPage() {
 
     const spendingDataForChart = Object.entries(spendingByCategory)
         .map(([category, total]) => ({ category, total }))
-        .sort((a, b) => b.total - a.total); // Sort by most spent
+        .sort((a, b) => b.total - a.total);
 
+    // --- Net Worth Trend Calculations ---
+    let cumulativeNetWorth = 0;
+    const netWorthDataFull = transactions.map(t => {
+        if (t.type === 'income') {
+            cumulativeNetWorth += t.amount;
+        } else if (t.type === 'expense') {
+            cumulativeNetWorth -= t.amount;
+        }
+        return {
+            date: t.date,
+            netWorth: cumulativeNetWorth
+        };
+    });
 
+    const validRanges = ['1y', '5y', 'all'] as const;
+    type Range = typeof validRanges[number];
+    const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '5y';
+    
+    let netWorthDataFiltered = netWorthDataFull;
+    const today = new Date();
+
+    if (range === '1y') {
+        const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+        netWorthDataFiltered = netWorthDataFull.filter(d => new Date(d.date) >= oneYearAgo);
+    } else if (range === '5y') {
+        const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
+        netWorthDataFiltered = netWorthDataFull.filter(d => new Date(d.date) >= fiveYearsAgo);
+    }
+    
     return (
         <div className="space-y-4">
              <Card>
                 <CardHeader>
                     <CardTitle>Financial Reports</CardTitle>
                     <CardDescription>
-                        An overview of your finances for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
+                        Dive deep into your financial history and trends.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+
+            {/* Net Worth Chart */}
+             <div className="grid grid-cols-1 gap-4">
+                <NetWorthReportChart data={netWorthDataFiltered} range={range} />
+            </div>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Monthly Snapshot</CardTitle>
+                    <CardDescription>
+                        Your financial summary for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
                     </CardDescription>
                 </CardHeader>
             </Card>
@@ -128,7 +174,7 @@ export default async function ReportsPage() {
                 </Card>
             </div>
 
-            {/* Chart Row */}
+            {/* Monthly Spending Chart */}
             <div className="grid grid-cols-1 gap-4">
                 <SpendingReportChart data={spendingDataForChart} />
             </div>
