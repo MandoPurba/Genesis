@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('https://<ID_PROYEK_ANDA>.supabase.co/storage/v1/object/public/assets/<NAMA_FILE_GAMBAR_ANDA.png>')" }}
+        style={{ backgroundImage: "url('https://cwiiattkbjfbntuqahzd.supabase.co/storage/v1/object/public/assets/bacground.jpg')" }}
       />
       
       {/* Layout Grid */}
