@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -32,44 +33,30 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
   const isSignUpView = searchParams.view === 'signup';
 
   return (
-    <div className="relative min-h-screen w-full bg-background">
+    <div className="relative min-h-screen w-full">
+      {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }}
-        data-ai-hint="dark abstract"
+        style={{ backgroundImage: "url('https://plus.unsplash.com/premium_photo-1701791988754-d200cc1b78c7?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}
       />
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-black/50" />
 
-      <div className="relative z-10 grid min-h-screen grid-cols-1 md:grid-cols-2">
-        <div className="flex flex-col items-center justify-center p-4 md:items-start md:p-8 lg:p-16">
+      {/* Layout Grid */}
+      <div className="relative z-10 grid min-h-screen grid-cols-1 md:grid-cols-5">
+        
+        {/* Left Panel: Form (takes 2/5 of the width on md screens) */}
+        <div className="col-span-1 flex flex-col items-center justify-center p-8 md:col-span-2">
           <div className="w-full max-w-sm">
-            <div className="flex items-center gap-4 mb-8 justify-center md:justify-start">
-              <svg
-                role="img"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12 text-primary flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" />
-                <path d="M12 12a4 4 0 1 0-4-4" />
-              </svg>
-              <h1 className="text-4xl font-bold tracking-tight text-white">Genesis Pro</h1>
-            </div>
-            <Card className="bg-gray-900/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+            <Card className="border-white/10 bg-black/40 text-white shadow-2xl backdrop-blur-lg">
               <CardHeader className="text-center">
-                <CardTitle className="text-2xl text-white">{isSignUpView ? 'Create an account' : 'Welcome back!'}</CardTitle>
+                <CardTitle className="text-3xl font-bold tracking-tight">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
                 <CardDescription className="text-gray-300">
                   {isSignUpView ? 'Enter your details to get started.' : 'Sign in to access your dashboard.'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid gap-4">
                  {searchParams.error && (
-                  <Alert variant="destructive">
+                  <Alert variant="destructive" className="bg-destructive/20 text-destructive-foreground border-destructive/50 [&>svg]:text-destructive-foreground">
                     <Terminal className="h-4 w-4" />
                     <AlertTitle>Authentication Error</AlertTitle>
                     <AlertDescription>{searchParams.error}</AlertDescription>
@@ -99,8 +86,29 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
             </Card>
           </div>
         </div>
-        <div className="hidden md:block">
-          {/* This is the empty right side, it will just show the background */}
+
+        {/* Right Panel: Brand (takes 3/5 of the width on md screens) */}
+        <div className="col-span-1 hidden md:col-span-3 md:flex md:flex-col md:items-end md:justify-end md:p-16">
+          <div className="text-right">
+             <div className="flex items-center justify-end gap-4">
+              <svg
+                role="img"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-14 w-14 text-primary flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" />
+                <path d="M12 12a4 4 0 1 0-4-4" />
+              </svg>
+              <h1 className="text-6xl font-bold tracking-tight text-white">Genesis Pro</h1>
+            </div>
+            <p className="mt-2 text-xl text-white/80">Your Personal Finance Hub.</p>
+          </div>
         </div>
       </div>
     </div>
