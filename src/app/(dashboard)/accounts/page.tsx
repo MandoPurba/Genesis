@@ -26,7 +26,7 @@ export default async function AccountsPage() {
   const [accountsResult, transactionsResult] = await Promise.all([
     supabase
       .from('accounts')
-      .select('id, name, type, balance') // 'balance' is treated as initial balance
+      .select('id, name, type') // 'balance' column removed from select
       .eq('user_id', user.id)
       .order('name'),
     supabase
@@ -64,9 +64,9 @@ export default async function AccountsPage() {
   }
 
   const calculatedBalances = new Map<number, number>();
-  // Initialize with initial balance
+  // Initialize all accounts with a balance of 0
   (accountsData || []).forEach(acc => {
-    calculatedBalances.set(acc.id, acc.balance);
+    calculatedBalances.set(acc.id, 0);
   });
 
   // Apply transaction amounts
@@ -78,9 +78,12 @@ export default async function AccountsPage() {
     }
   });
 
+  // Map accounts and add the calculated balance
   const accounts: Account[] = (accountsData || []).map(acc => ({
-    ...acc,
-    balance: calculatedBalances.get(acc.id) || acc.balance,
+    id: acc.id,
+    name: acc.name,
+    type: acc.type,
+    balance: calculatedBalances.get(acc.id) || 0,
   }));
 
   return (

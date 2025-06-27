@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -36,23 +35,16 @@ export function AddAccountSheet() {
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addAccount, null)
   const [key, setKey] = useState(Date.now());
-  const [balanceValue, setBalanceValue] = useState('');
 
   useEffect(() => {
     if (state?.success) {
       toast({ title: "Success!", description: state.success })
       setOpen(false)
       setKey(Date.now())
-      setBalanceValue('')
     } else if (state?.error) {
       toast({ title: "Error", description: state.error, variant: "destructive" })
     }
   }, [state, toast])
-
-  const handleBalanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/[^0-9]/g, '');
-    setBalanceValue(rawValue);
-  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -72,8 +64,6 @@ export function AddAccountSheet() {
         <form action={formAction} key={key} className="flex flex-col flex-1">
           <div className="grid gap-4 py-4 flex-1 overflow-y-auto pr-6">
             
-            <input type="hidden" name="balance" value={balanceValue || '0'} />
-
             <div>
               <Label htmlFor="name">Account Name</Label>
               <Input
@@ -98,18 +88,6 @@ export function AddAccountSheet() {
                 </SelectContent>
               </Select>
               {state?.errors?.type && <p className="text-destructive text-sm mt-1">{state.errors.type[0]}</p>}
-            </div>
-
-            <div>
-              <Label htmlFor="balance-display">Initial Balance (Optional)</Label>
-              <Input
-                id="balance-display"
-                type="text"
-                placeholder="e.g., Rp 1.000.000"
-                value={balanceValue === '' ? '' : formatCurrency(Number(balanceValue))}
-                onChange={handleBalanceChange}
-              />
-               {state?.errors?.balance && <p className="text-destructive text-sm mt-1">{state.errors.balance[0]}</p>}
             </div>
 
           </div>
