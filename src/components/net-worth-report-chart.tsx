@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ReferenceLine } from "recharts"
 import {
   Card,
   CardContent,
@@ -19,14 +19,13 @@ import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 
 const chartConfig = {
-  netWorth: { label: "Net Worth" },
-  up: { label: "Increase", color: "hsl(var(--success))" },
-  down: { label: "Decrease", color: "hsl(var(--destructive))" },
-  stable: { label: "Stable", color: "hsl(var(--chart-1))" },
+  netFlow: { label: "Net Flow" },
+  positive: { color: "hsl(var(--success))" },
+  negative: { color: "hsl(var(--destructive))" },
 } satisfies ChartConfig
 
 type NetWorthReportChartProps = {
-  data: { date: string; netWorth: number; up?: number | null, down?: number | null, stable?: number | null }[];
+  data: { date: string; netFlow: number }[];
   range: '1y' | '5y' | 'all';
   period: 'this_year' | 'last_year';
   spendingPeriod: 'this_year' | 'last_year';
@@ -34,17 +33,18 @@ type NetWorthReportChartProps = {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload; // Main data object for the point
+      const data = payload[0].payload;
+      const isPositive = data.netFlow >= 0;
       return (
         <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
           <div className="font-medium">
-            {new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            {new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
           </div>
           <div className="flex w-full flex-wrap items-stretch gap-2">
             <div className="flex flex-1 justify-between leading-none">
-              <span>Net Worth</span>
-              <span className="font-mono font-medium tabular-nums text-foreground ml-4">
-                {formatCurrency(data.netWorth)}
+              <span>Net Flow</span>
+              <span className={`font-mono font-medium tabular-nums ml-4 ${isPositive ? 'text-success' : 'text-destructive'}`}>
+                {formatCurrency(data.netFlow)}
               </span>
             </div>
           </div>
@@ -58,12 +58,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function NetWorthReportChart({ data, range, period, spendingPeriod }: NetWorthReportChartProps) {
 
   const formatYAxisTick = (tick: number) => {
-    if (Math.abs(tick) >= 1000000) {
-      return `Rp${(tick / 1000000).toFixed(1)}M`
-    }
-    if (Math.abs(tick) >= 1000) {
-      return `Rp${(tick / 1000).toFixed(0)}K`
-    }
+    if (Math.abs(tick) >= 1000000) return `Rp${(tick / 1000000).toFixed(1)}M`
+    if (Math.abs(tick) >= 1000) return `Rp${(tick / 1000).toFixed(0)}K`
     return formatCurrency(tick)
   }
 
@@ -74,16 +70,30 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
     });
   }
 
+  const gradientOffset = () => {
+    if (data.length === 0) return 0.5;
+    const dataMax = Math.max(...data.map((i) => i.netFlow));
+    const dataMin = Math.min(...data.map((i) => i.netFlow));
+
+    if (dataMax <= 0) return 0;
+    if (dataMin >= 0) return 1;
+
+    return dataMax / (dataMax - dataMin);
+  };
+  
+  const off = gradientOffset();
+
+
   return (
     <Card>
        <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Net Worth Trend</CardTitle>
-            <CardDescription>Your financial growth over time.</CardDescription>
+            <CardTitle>Monthly Net Cash Flow</CardTitle>
+            <CardDescription>Your monthly income minus expenses.</CardDescription>
           </div>
           <div className="flex items-center gap-2 p-1 bg-muted rounded-md">
             <Button variant={range === '1y' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
-              <Link href={`/reports?range=1y&period=${period}&spendingPeriod=${spendingPeriod}`} scroll={false}>Last Year</Link>
+              <Link href={`/reports?range=1y&period=${period}&spendingPeriod=${spendingPeriod}`} scroll={false}>1 Year</Link>
             </Button>
             <Button variant={range === '5y' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
               <Link href={`/reports?range=5y&period=${period}&spendingPeriod=${spendingPeriod}`} scroll={false}>5 Years</Link>
@@ -99,25 +109,12 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
                 <AreaChart
                     accessibilityLayer
                     data={data}
-                    margin={{
-                        top: 5,
-                        right: 20,
-                        left: 20,
-                        bottom: 5,
-                    }}
+                    margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
                 >
                     <defs>
-                        <linearGradient id="colorUp" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--color-up)" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="var(--color-up)" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="colorDown" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--color-down)" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="var(--color-down)" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="colorStable" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--color-stable)" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="var(--color-stable)" stopOpacity={0}/>
+                        <linearGradient id="splitColor" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset={off} stopColor="var(--color-positive)" stopOpacity={0.4} />
+                            <stop offset={off} stopColor="var(--color-negative)" stopOpacity={0.4} />
                         </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} />
@@ -134,20 +131,18 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
                         axisLine={false}
                         tickMargin={8}
                         tickFormatter={formatYAxisTick}
-                        domain={['dataMin', 'dataMax']}
                     />
                     <ChartTooltipWrapper
                         cursor={true}
                         content={<CustomTooltip />}
                     />
-                    <Area dataKey="up" type="monotone" stroke="var(--color-up)" strokeWidth={2} fillOpacity={1} fill="url(#colorUp)" dot={false} connectNulls={false}/>
-                    <Area dataKey="down" type="monotone" stroke="var(--color-down)" strokeWidth={2} fillOpacity={1} fill="url(#colorDown)" dot={false} connectNulls={false}/>
-                    <Area dataKey="stable" type="monotone" stroke="var(--color-stable)" strokeWidth={2} fillOpacity={1} fill="url(#colorStable)" dot={false} connectNulls={false}/>
+                    <ReferenceLine y={0} stroke="hsl(var(--border))" strokeDasharray="3 3" />
+                    <Area dataKey="netFlow" type="monotone" stroke="hsl(var(--foreground))" strokeWidth={2} fill="url(#splitColor)" dot={false} />
                 </AreaChart>
             </ChartContainer>
          ) : (
             <div className="flex items-center justify-center w-full text-center rounded-lg bg-muted/50 p-4 min-h-[350px]">
-                <p className="text-muted-foreground">Not enough data to display the net worth trend.</p>
+                <p className="text-muted-foreground">Not enough data to display the net flow trend.</p>
             </div>
          )}
       </CardContent>

@@ -39,79 +39,44 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     const transactions = allTransactions || [];
     const today = new Date();
 
-    // --- 1. Net Worth Trend Calculations ---
-    let cumulativeNetWorth = 0;
-    const netWorthDataFull = transactions.map(t => {
+    // --- 1. Monthly Net Cash Flow Calculations ---
+    const monthlyFlowMap = new Map<string, { income: number; expense: number }>();
+    transactions.forEach(t => {
+        const monthKey = new Date(t.date).toISOString().slice(0, 7); // YYYY-MM
+        const monthData = monthlyFlowMap.get(monthKey) || { income: 0, expense: 0 };
         if (t.type === 'income') {
-            cumulativeNetWorth += t.amount;
+            monthData.income += t.amount;
         } else if (t.type === 'expense') {
-            cumulativeNetWorth -= t.amount;
+            monthData.expense += t.amount;
         }
-        return { date: new Date(t.date), netWorth: cumulativeNetWorth };
+        monthlyFlowMap.set(monthKey, monthData);
     });
 
-    const monthlyNetWorthMap = new Map<string, { date: Date, netWorth: number }>();
-    if(netWorthDataFull.length > 0) {
-        netWorthDataFull.forEach(point => {
-            const monthKey = `${point.date.getUTCFullYear()}-${String(point.date.getUTCMonth() + 1).padStart(2, '0')}`;
-            monthlyNetWorthMap.set(monthKey, point);
-        });
-    }
-    const monthlyPoints = Array.from(monthlyNetWorthMap.values()).sort((a,b) => a.date.getTime() - b.date.getTime());
-    
-    const monthlyPointsWithTrend = monthlyPoints.map(point => ({
-        date: point.date,
-        netWorth: point.netWorth,
-        up: null as number | null,
-        down: null as number | null,
-        stable: null as number | null,
-    }));
-
-    if (monthlyPointsWithTrend.length > 1) {
-        for (let i = 1; i < monthlyPointsWithTrend.length; i++) {
-            const prev = monthlyPointsWithTrend[i-1];
-            const current = monthlyPointsWithTrend[i];
-
-            if (current.netWorth > prev.netWorth) {
-                prev.up = prev.netWorth;
-                current.up = current.netWorth;
-            } else if (current.netWorth < prev.netWorth) {
-                prev.down = prev.netWorth;
-                current.down = current.netWorth;
-            } else { 
-                prev.stable = prev.netWorth;
-                current.stable = current.netWorth;
-            }
-        }
-    } else if (monthlyPointsWithTrend.length === 1) {
-        monthlyPointsWithTrend[0].stable = monthlyPointsWithTrend[0].netWorth;
-    }
+    const monthlyFlows = Array.from(monthlyFlowMap.entries()).map(([monthKey, data]) => {
+        return {
+            date: new Date(`${monthKey}-01T00:00:00Z`), // Use first day of month for sorting
+            netFlow: data.income - data.expense,
+        };
+    }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const validRanges = ['1y', '5y', 'all'] as const;
     type Range = typeof validRanges[number];
     const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '5y';
     
-    let filteredMonthlyPoints = monthlyPointsWithTrend;
+    let filteredMonthlyFlows = monthlyFlows;
     if (range === '1y') {
         const oneYearAgo = new Date(today);
         oneYearAgo.setFullYear(today.getFullYear() - 1);
-        const anchorPoint = monthlyPointsWithTrend.findLast(p => p.date < oneYearAgo);
-        const pointsInWindow = monthlyPointsWithTrend.filter(d => d.date >= oneYearAgo);
-        filteredMonthlyPoints = anchorPoint ? [anchorPoint, ...pointsInWindow] : pointsInWindow;
+        filteredMonthlyFlows = monthlyFlows.filter(d => d.date >= oneYearAgo);
     } else if (range === '5y') {
         const fiveYearsAgo = new Date(today);
         fiveYearsAgo.setFullYear(today.getFullYear() - 5);
-        const anchorPoint = monthlyPointsWithTrend.findLast(p => p.date < fiveYearsAgo);
-        const pointsInWindow = monthlyPointsWithTrend.filter(d => d.date >= fiveYearsAgo);
-        filteredMonthlyPoints = anchorPoint ? [anchorPoint, ...pointsInWindow] : pointsInWindow;
+        filteredMonthlyFlows = monthlyFlows.filter(d => d.date >= fiveYearsAgo);
     }
     
-    const netWorthDataForChart = filteredMonthlyPoints.map(point => ({
+    const cashFlowDataForChart = filteredMonthlyFlows.map(point => ({
         date: point.date.toISOString(),
-        netWorth: point.netWorth,
-        up: point.up,
-        down: point.down,
-        stable: point.stable,
+        netFlow: point.netFlow,
     }));
     
     // --- 2. & 3. Calculations for other reports ---
@@ -179,7 +144,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-                <NetWorthReportChart data={netWorthDataForChart} range={range} period={period} spendingPeriod={spendingPeriod} />
+                <NetWorthReportChart data={cashFlowDataForChart} range={range} period={period} spendingPeriod={spendingPeriod} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
