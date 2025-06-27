@@ -23,15 +23,24 @@ export default async function AccountsPage() {
     redirect('/login');
   }
 
-  const { data: accounts, error } = await supabase
-    .from('accounts')
-    .select('id, name, type, balance')
-    .eq('user_id', user.id)
-    .order('name');
+  const [accountsResult, transactionsResult] = await Promise.all([
+    supabase
+      .from('accounts')
+      .select('id, name, type, balance') // 'balance' is treated as initial balance
+      .eq('user_id', user.id)
+      .order('name'),
+    supabase
+      .from('transactions')
+      .select('account_id, type, amount')
+      .eq('user_id', user.id)
+  ]);
   
-  if (error) {
-    console.error("Error fetching accounts:", error);
-    if (error.code === '42P01') { // relation "accounts" does not exist
+  const { data: accountsData, error: accountsError } = accountsResult;
+  const { data: transactions, error: transactionsError } = transactionsResult;
+  
+  if (accountsError) {
+    console.error("Error fetching accounts:", accountsError);
+    if (accountsError.code === '42P01') { // relation "accounts" does not exist
         return (
             <Card>
                 <CardHeader>
@@ -48,6 +57,31 @@ export default async function AccountsPage() {
     }
     return <div>Error loading accounts. Please check the console for details.</div>
   }
+
+  if (transactionsError) {
+    console.error("Error fetching transactions for balance calculation:", transactionsError);
+    return <div>Error loading transaction data.</div>
+  }
+
+  const calculatedBalances = new Map<number, number>();
+  // Initialize with initial balance
+  (accountsData || []).forEach(acc => {
+    calculatedBalances.set(acc.id, acc.balance);
+  });
+
+  // Apply transaction amounts
+  (transactions || []).forEach(t => {
+    if (t.account_id) {
+      const currentBalance = calculatedBalances.get(t.account_id) || 0;
+      const adjustment = t.type === 'income' ? t.amount : -t.amount;
+      calculatedBalances.set(t.account_id, currentBalance + adjustment);
+    }
+  });
+
+  const accounts: Account[] = (accountsData || []).map(acc => ({
+    ...acc,
+    balance: calculatedBalances.get(acc.id) || acc.balance,
+  }));
 
   return (
     <Card className="h-full flex flex-col">

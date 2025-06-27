@@ -48,32 +48,9 @@ export async function addTransaction(prevState: any, formData: FormData) {
     console.error('Supabase transaction insert error:', transactionError)
     return { error: `Database error: ${transactionError.message}` }
   }
-  
-  // Update account balance, ensuring the user owns the account
-  const { data: account, error: accountError } = await supabase
-    .from('accounts')
-    .select('balance')
-    .eq('id', accountId)
-    .eq('user_id', user.id) // Ensure user owns the account
-    .single()
 
-  if (accountError) {
-    console.error('Error fetching account for balance update:', accountError)
-    return { success: 'Transaction added, but failed to update account balance.' }
-  }
-
-  const newBalance = type === 'income' ? account.balance + amount : account.balance - amount;
-
-  const { error: updateError } = await supabase
-    .from('accounts')
-    .update({ balance: newBalance })
-    .eq('id', accountId)
-    .eq('user_id', user.id) // Ensure user owns the account
-
-  if (updateError) {
-    console.error('Error updating account balance:', updateError)
-    return { success: 'Transaction added, but failed to update account balance.' }
-  }
+  // The logic for updating account balance has been removed.
+  // Balances will be calculated dynamically on the frontend.
 
   revalidatePath('/transactions')
   revalidatePath('/overview')
