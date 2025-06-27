@@ -5,11 +5,11 @@ import { MainNav } from "@/components/main-nav"
 import { UserNav } from "@/components/user-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, Bell, MessageCircle } from "lucide-react"
+import { Bell, MessageCircle } from "lucide-react"
 import { SupabaseConfigWarning } from "@/components/supabase-config-warning"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { MobileBlocker } from "@/components/mobile-blocker"
+import { GlobalSearch } from "@/components/global-search"
 
 export default async function DashboardLayout({
   children,
@@ -62,9 +62,8 @@ export default async function DashboardLayout({
                   </div>
 
                   <div className="flex items-center gap-4">
-                      <div className="relative hidden md:block">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input type="search" placeholder="Search..." className="pl-9 bg-card/80 rounded-full" />
+                      <div className="relative hidden md:block w-64">
+                        <GlobalSearch />
                       </div>
                       <div className="flex items-center gap-2">
                           <ThemeToggle />
