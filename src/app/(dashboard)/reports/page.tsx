@@ -1,8 +1,19 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { NetWorthReportChart } from "@/components/net-worth-report-chart"
+import { IncomeVsExpenseReport } from "@/components/income-vs-expense-report"
+import { SpendingByCategoryReport } from "@/components/spending-by-category-report"
 
-export default async function ReportsPage({ searchParams }: { searchParams: { range?: string } }) {
+const getYearDateRange = (year: number) => {
+    const firstDay = new Date(Date.UTC(year, 0, 1));
+    const lastDay = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
+    return {
+        start: firstDay.toISOString(),
+        end: lastDay.toISOString(),
+    };
+};
+
+export default async function ReportsPage({ searchParams }: { searchParams: { range?: string, period?: string } }) {
     const supabase = createClient();
     if (!supabase) {
         return <div>Supabase not configured.</div>;
@@ -13,21 +24,20 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         redirect('/login');
     }
 
-    // --- Fetch ALL transactions for the Net Worth report ---
+    // --- Fetch ALL transactions once ---
     const { data: allTransactions, error } = await supabase
         .from('transactions')
-        .select('date, type, amount')
+        .select('date, type, amount, categories(id, name)')
         .eq('user_id', user.id)
-        .order('date', { ascending: true }) // Order chronologically for net worth calculation
+        .order('date', { ascending: true });
 
     if (error) {
         console.error("Error fetching transactions for reports:", error);
         return <div>Error loading report data.</div>
     }
-
     const transactions = allTransactions || [];
 
-    // --- Net Worth Trend Calculations ---
+    // --- 1. Net Worth Trend Calculations ---
     let cumulativeNetWorth = 0;
     const netWorthDataFull = transactions.map(t => {
         if (t.type === 'income') {
@@ -35,11 +45,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         } else if (t.type === 'expense') {
             cumulativeNetWorth -= t.amount;
         }
-        // Transfers do not affect net worth
-        return {
-            date: t.date,
-            netWorth: cumulativeNetWorth
-        };
+        return { date: t.date, netWorth: cumulativeNetWorth };
     });
 
     const validRanges = ['1y', '5y', 'all'] as const;
@@ -48,7 +54,6 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     
     let netWorthDataFiltered = netWorthDataFull;
     const today = new Date();
-
     if (range === '1y') {
         const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
         netWorthDataFiltered = netWorthDataFull.filter(d => new Date(d.date) >= oneYearAgo);
@@ -57,10 +62,56 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         netWorthDataFiltered = netWorthDataFull.filter(d => new Date(d.date) >= fiveYearsAgo);
     }
     
+    // --- 2. & 3. Calculations for new reports ---
+    const validPeriods = ['this_year', 'last_year'] as const;
+    type Period = typeof validPeriods[number];
+    const period: Period = validPeriods.includes(searchParams.period as any) ? searchParams.period as Period : 'this_year';
+    
+    const targetYear = period === 'last_year' ? today.getFullYear() - 1 : today.getFullYear();
+    const yearRange = getYearDateRange(targetYear);
+
+    const periodTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate.toISOString() >= yearRange.start && tDate.toISOString() <= yearRange.end;
+    });
+
+    // Income vs Expense Data
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthlyDataMap = new Map<string, { income: number; expense: number }>();
+    monthNames.forEach(name => monthlyDataMap.set(name, { income: 0, expense: 0 }));
+
+    periodTransactions.forEach(t => {
+        const monthName = monthNames[new Date(t.date).getUTCMonth()];
+        const data = monthlyDataMap.get(monthName);
+        if (data) {
+            if (t.type === 'income') data.income += t.amount;
+            if (t.type === 'expense') data.expense += t.amount;
+        }
+    });
+    const incomeExpenseData = Array.from(monthlyDataMap.entries()).map(([month, totals]) => ({ month, ...totals }));
+
+    // Spending by Category Data
+    const categorySpending = periodTransactions
+        .filter(t => t.type === 'expense')
+        .reduce((acc, t) => {
+            const categoryName = t.categories?.name || 'Uncategorized';
+            acc[categoryName] = (acc[categoryName] || 0) + t.amount;
+            return acc;
+        }, {} as Record<string, number>);
+
+    const spendingByCategoryData = Object.entries(categorySpending)
+        .map(([category, total]) => ({ category, total }))
+        .sort((a, b) => b.total - a.total);
+
     return (
-        <div className="space-y-4">
-             <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
                 <NetWorthReportChart data={netWorthDataFiltered} range={range} />
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <IncomeVsExpenseReport data={incomeExpenseData} period={period} />
+                <SpendingByCategoryReport data={spendingByCategoryData} period={period} />
             </div>
         </div>
     )
