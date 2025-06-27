@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -43,9 +44,9 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
       <div className="relative z-10 grid min-h-screen grid-cols-1 md:grid-cols-5">
         
         {/* Left Panel: Form (takes 2/5 of the width on md screens) */}
-        <div className="col-span-1 flex flex-col items-center justify-center p-8 md:col-span-2">
-          <div className="w-full max-w-sm">
-            <Card className="border-gray-200/20 bg-white/30 text-card-foreground shadow-2xl backdrop-blur-sm">
+        <div className="col-span-1 md:col-span-2">
+          <Card className="h-full w-full flex flex-col items-center justify-center rounded-none border-0 bg-white/30 text-card-foreground shadow-2xl backdrop-blur-sm">
+            <div className="w-full max-w-sm">
               <CardHeader className="text-center">
                 <CardTitle className="text-3xl font-bold tracking-tight dark:text-slate-900">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
                 <CardDescription className="text-muted-foreground dark:text-slate-800">
@@ -81,8 +82,8 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
                   )}
                 </div>
               </CardContent>
-            </Card>
-          </div>
+            </div>
+          </Card>
         </div>
 
         {/* Right Panel: Brand (takes 3/5 of the width on md screens) */}
