@@ -11,7 +11,7 @@ import { LoaderCircle, FileSearch } from "lucide-react"
 type Transaction = {
   id: number;
   date: string;
-  type: 'income' | 'expense';
+  type: 'income' | 'expense' | 'transfer';
   amount: number;
   description: string | null;
   categories: {
@@ -80,14 +80,14 @@ export function TransactionsTable({ initialTransactions }: { initialTransactions
               <TableCell>
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-secondary rounded-full flex items-center justify-center">
-                    <IconForCategory categoryName={transaction.categories?.name || 'Uncategorized'} />
+                    <IconForCategory categoryName={transaction.type === 'transfer' ? 'Transfer' : (transaction.categories?.name || 'Uncategorized')} />
                   </div>
                   <div>
                     <p className="font-medium leading-none">
-                      {transaction.description || transaction.categories?.name || 'Transaction'}
+                      {transaction.description || (transaction.type === 'transfer' ? 'Transfer' : transaction.categories?.name) || 'Transaction'}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {transaction.categories?.name || 'Uncategorized'}
+                      {transaction.type === 'transfer' ? 'Account Transfer' : (transaction.categories?.name || 'Uncategorized')}
                     </p>
                   </div>
                 </div>
@@ -100,15 +100,25 @@ export function TransactionsTable({ initialTransactions }: { initialTransactions
                 })}
               </TableCell>
               <TableCell className="hidden sm:table-cell">
-                <Badge variant={transaction.type === 'income' ? 'default' : 'secondary'} 
-                  className={transaction.type === 'income' 
-                    ? 'bg-success/20 text-success border border-success/30 hover:bg-success/30' 
-                    : 'bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20'}>
+                <Badge variant={
+                    transaction.type === 'transfer' ? 'outline' : (transaction.type === 'income' ? 'default' : 'secondary')
+                  } 
+                  className={
+                    transaction.type === 'income' 
+                      ? 'bg-success/20 text-success border border-success/30 hover:bg-success/30' 
+                      : transaction.type === 'expense'
+                        ? 'bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20'
+                        : ''
+                  }>
                   {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                 </Badge>
               </TableCell>
-              <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                {transaction.type === 'income' ? '+' : '-'}
+              <TableCell className={`text-right font-medium ${
+                transaction.type === 'income' ? 'text-success' 
+                : transaction.type === 'expense' ? 'text-destructive' 
+                : 'text-muted-foreground'
+              }`}>
+                {transaction.type === 'expense' ? '-' : transaction.type === 'income' ? '+' : ''}
                 {formatCurrency(transaction.amount)}
               </TableCell>
             </TableRow>

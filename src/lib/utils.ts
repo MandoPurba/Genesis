@@ -15,7 +15,8 @@ import {
     Utensils,
     BookOpen,
     Wallet,
-    Smartphone
+    Smartphone,
+    ArrowRightLeft,
 } from "lucide-react"
 import React from "react"
 
@@ -53,6 +54,7 @@ export const categoryIcons: { [key: string]: React.ElementType } = {
     'Gifts': Gift,
     'Sales': TrendingUp,
     'Investments': Landmark,
+    'Transfer': ArrowRightLeft,
     'Other': MoreHorizontal,
     'Uncategorized': MoreHorizontal,
 };

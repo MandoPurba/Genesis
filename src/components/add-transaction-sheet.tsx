@@ -43,13 +43,19 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addTransaction, null)
 
-  const [transactionType, setTransactionType] = useState<'income' | 'expense'>('expense')
+  const [transactionType, setTransactionType] = useState<'income' | 'expense' | 'transfer'>('expense')
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [amountValue, setAmountValue] = useState('')
   const [key, setKey] = useState(Date.now()); // Used to reset form
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>()
   const [overBudgetWarning, setOverBudgetWarning] = useState<string | null>(null)
+  
+  // For income/expense
   const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>()
+  // For transfers
+  const [fromAccountId, setFromAccountId] = useState<string | undefined>()
+  const [toAccountId, setToAccountId] = useState<string | undefined>()
+
   const [insufficientBalanceWarning, setInsufficientBalanceWarning] = useState<string | null>(null)
 
   const filteredCategories = categories.filter(c => c.type === transactionType)
@@ -63,8 +69,10 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
       setTransactionType('expense')
       setAmountValue('')
       setSelectedCategoryId(undefined)
-      setOverBudgetWarning(null)
       setSelectedAccountId(undefined)
+      setFromAccountId(undefined)
+      setToAccountId(undefined)
+      setOverBudgetWarning(null)
       setInsufficientBalanceWarning(null)
       setKey(Date.now())
     } else if (state?.error) {
@@ -73,8 +81,11 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
   }, [state, toast])
 
   useEffect(() => {
-    // Reset selected category when type changes
+    // Reset selected category/accounts when type changes
     setSelectedCategoryId(undefined)
+    setSelectedAccountId(undefined)
+    setFromAccountId(undefined)
+    setToAccountId(undefined)
   }, [transactionType])
 
   // Effect for budget warning
@@ -104,8 +115,9 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
 
   // Effect for insufficient balance warning
   useEffect(() => {
-    if (transactionType === 'expense' && selectedAccountId && amountValue) {
-        const accountIdNum = Number(selectedAccountId);
+    const accountToCheckId = transactionType === 'transfer' ? fromAccountId : selectedAccountId;
+    if ((transactionType === 'expense' || transactionType === 'transfer') && accountToCheckId && amountValue) {
+        const accountIdNum = Number(accountToCheckId);
         const amountNum = Number(amountValue) || 0;
         const selectedAccount = accounts.find(acc => acc.id === accountIdNum);
 
@@ -117,7 +129,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
     } else {
         setInsufficientBalanceWarning(null);
     }
-  }, [selectedAccountId, amountValue, transactionType, accounts]);
+  }, [selectedAccountId, fromAccountId, amountValue, transactionType, accounts]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -136,7 +148,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
         <SheetHeader>
           <SheetTitle>Add a New Transaction</SheetTitle>
           <SheetDescription>
-            Enter the details of your income or expense.
+            Enter the details of your income, expense, or transfer.
           </SheetDescription>
         </SheetHeader>
         <form action={formAction} key={key} className="flex flex-col flex-1">
@@ -144,8 +156,8 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
             <RadioGroup
               name="type"
               value={transactionType}
-              onValueChange={(value: 'income' | 'expense') => setTransactionType(value)}
-              className="grid grid-cols-2 gap-4"
+              onValueChange={(value: any) => setTransactionType(value)}
+              className="grid grid-cols-3 gap-4"
             >
               <div>
                 <RadioGroupItem value="expense" id="expense" className="peer sr-only" />
@@ -157,6 +169,12 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
                 <RadioGroupItem value="income" id="income" className="peer sr-only" />
                 <Label htmlFor="income" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
                   Income
+                </Label>
+              </div>
+              <div>
+                <RadioGroupItem value="transfer" id="transfer" className="peer sr-only" />
+                <Label htmlFor="transfer" className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary">
+                  Transfer
                 </Label>
               </div>
             </RadioGroup>
@@ -182,42 +200,81 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
               <DatePicker date={date} setDate={setDate} disabled={(date) => date > new Date()} />
             </div>
 
-            <div>
-              <Label htmlFor="accountId">Account</Label>
-              <Select name="accountId" required value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                <SelectTrigger id="accountId">
-                  <SelectValue placeholder="Select an account" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map(account => (
-                    <SelectItem key={account.id} value={account.id.toString()}>
-                      {account.name} ({formatCurrency(account.balance)})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {state?.errors?.accountId && <p className="text-destructive text-sm mt-1">{state.errors.accountId[0]}</p>}
-            </div>
+            {transactionType === 'transfer' ? (
+              <>
+                <div>
+                  <Label htmlFor="fromAccountId">From Account</Label>
+                  <Select name="fromAccountId" required value={fromAccountId} onValueChange={setFromAccountId}>
+                    <SelectTrigger id="fromAccountId">
+                      <SelectValue placeholder="Select an account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map(account => (
+                        <SelectItem key={account.id} value={account.id.toString()}>
+                          {account.name} ({formatCurrency(account.balance)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {state?.errors?.fromAccountId && <p className="text-destructive text-sm mt-1">{state.errors.fromAccountId[0]}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="toAccountId">To Account</Label>
+                  <Select name="toAccountId" required value={toAccountId} onValueChange={setToAccountId}>
+                    <SelectTrigger id="toAccountId">
+                      <SelectValue placeholder="Select an account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map(account => (
+                        <SelectItem key={account.id} value={account.id.toString()} disabled={account.id === Number(fromAccountId)}>
+                          {account.name} ({formatCurrency(account.balance)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {state?.errors?.toAccountId && <p className="text-destructive text-sm mt-1">{state.errors.toAccountId[0]}</p>}
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <Label htmlFor="accountId">Account</Label>
+                  <Select name="accountId" required value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                    <SelectTrigger id="accountId">
+                      <SelectValue placeholder="Select an account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map(account => (
+                        <SelectItem key={account.id} value={account.id.toString()}>
+                          {account.name} ({formatCurrency(account.balance)})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {state?.errors?.accountId && <p className="text-destructive text-sm mt-1">{state.errors.accountId[0]}</p>}
+                </div>
 
-            <div>
-              <Label htmlFor="categoryId">Category</Label>
-              <Select 
-                name="categoryId" 
-                required
-                value={selectedCategoryId}
-                onValueChange={setSelectedCategoryId}
-              >
-                <SelectTrigger id="categoryId">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredCategories.map(category => (
-                    <SelectItem key={category.id} value={category.id.toString()}>{category.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {state?.errors?.categoryId && <p className="text-destructive text-sm mt-1">{state.errors.categoryId[0]}</p>}
-            </div>
+                <div>
+                  <Label htmlFor="categoryId">Category</Label>
+                  <Select 
+                    name="categoryId" 
+                    required
+                    value={selectedCategoryId}
+                    onValueChange={setSelectedCategoryId}
+                  >
+                    <SelectTrigger id="categoryId">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredCategories.map(category => (
+                        <SelectItem key={category.id} value={category.id.toString()}>{category.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {state?.errors?.categoryId && <p className="text-destructive text-sm mt-1">{state.errors.categoryId[0]}</p>}
+                </div>
+              </>
+            )}
 
             <div>
               <Label htmlFor="description">Description (Optional)</Label>

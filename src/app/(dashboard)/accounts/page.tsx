@@ -26,12 +26,12 @@ export default async function AccountsPage() {
   const [accountsResult, transactionsResult] = await Promise.all([
     supabase
       .from('accounts')
-      .select('id, name, type') // 'balance' column removed from select
+      .select('id, name, type')
       .eq('user_id', user.id)
       .order('name'),
     supabase
       .from('transactions')
-      .select('account_id, type, amount')
+      .select('account_id, to_account_id, type, amount')
       .eq('user_id', user.id)
   ]);
   
@@ -71,10 +71,23 @@ export default async function AccountsPage() {
 
   // Apply transaction amounts
   (transactions || []).forEach(t => {
-    if (t.account_id) {
-      const currentBalance = calculatedBalances.get(t.account_id) || 0;
-      const adjustment = t.type === 'income' ? t.amount : -t.amount;
-      calculatedBalances.set(t.account_id, currentBalance + adjustment);
+    if (t.type === 'transfer') {
+      // For transfers, decrease 'from' account and increase 'to' account
+      if (t.account_id) {
+        const fromBalance = calculatedBalances.get(t.account_id) || 0;
+        calculatedBalances.set(t.account_id, fromBalance - t.amount);
+      }
+      if (t.to_account_id) {
+        const toBalance = calculatedBalances.get(t.to_account_id) || 0;
+        calculatedBalances.set(t.to_account_id, toBalance + t.amount);
+      }
+    } else {
+      // For income/expense, adjust the primary account
+      if (t.account_id) {
+        const currentBalance = calculatedBalances.get(t.account_id) || 0;
+        const adjustment = t.type === 'income' ? t.amount : -t.amount;
+        calculatedBalances.set(t.account_id, currentBalance + adjustment);
+      }
     }
   });
 

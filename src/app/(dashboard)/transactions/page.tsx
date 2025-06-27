@@ -29,7 +29,7 @@ export default async function TransactionsPage() {
     fetchTransactions(0),
     supabase.from('categories').select('*').eq('user_id', user.id).order('name'),
     supabase.from('accounts').select('id, name').eq('user_id', user.id).order('name'),
-    supabase.from('transactions').select('account_id, type, amount').eq('user_id', user.id) // Fetch all transactions for balance calculation
+    supabase.from('transactions').select('account_id, to_account_id, type, amount').eq('user_id', user.id) // Fetch all transactions for balance calculation
   ]);
 
   const categories = categoriesData.data || [];
@@ -48,10 +48,21 @@ export default async function TransactionsPage() {
   });
 
   allTransactions.forEach(t => {
-    if (t.account_id) {
-      const currentBalance = accountBalances.get(t.account_id) || 0;
-      const adjustment = t.type === 'income' ? t.amount : -t.amount;
-      accountBalances.set(t.account_id, currentBalance + adjustment);
+    if (t.type === 'transfer') {
+      if (t.account_id) {
+        const fromBalance = accountBalances.get(t.account_id) || 0;
+        accountBalances.set(t.account_id, fromBalance - t.amount);
+      }
+      if (t.to_account_id) {
+        const toBalance = accountBalances.get(t.to_account_id) || 0;
+        accountBalances.set(t.to_account_id, toBalance + t.amount);
+      }
+    } else {
+      if (t.account_id) {
+        const currentBalance = accountBalances.get(t.account_id) || 0;
+        const adjustment = t.type === 'income' ? t.amount : -t.amount;
+        accountBalances.set(t.account_id, currentBalance + adjustment);
+      }
     }
   });
 

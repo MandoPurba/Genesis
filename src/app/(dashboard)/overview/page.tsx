@@ -63,7 +63,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
 
   // --- Derivations for Stat Cards ---
   const totalNetWorth = transactions.reduce((acc, t) => {
-    return t.type === 'income' ? acc + t.amount : acc - t.amount;
+    if (t.type === 'income') return acc + t.amount;
+    if (t.type === 'expense') return acc - t.amount;
+    return acc; // Ignore transfers for net worth calculation
   }, 0);
 
   const currentMonthRange = getMonthDateRange(now);
