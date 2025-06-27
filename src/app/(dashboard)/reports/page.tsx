@@ -1,3 +1,4 @@
+
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { NetWorthReportChart } from "@/components/net-worth-report-chart"
@@ -75,8 +76,9 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         return tDate.toISOString() >= yearRange.start && tDate.toISOString() <= yearRange.end;
     });
 
-    // Income vs Expense Data
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Income vs Expense Data
     const monthlyDataMap = new Map<string, { income: number; expense: number }>();
     monthNames.forEach(name => monthlyDataMap.set(name, { income: 0, expense: 0 }));
 
@@ -90,18 +92,24 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     });
     const incomeExpenseData = Array.from(monthlyDataMap.entries()).map(([month, totals]) => ({ month, ...totals }));
 
-    // Spending by Category Data
-    const categorySpending = periodTransactions
-        .filter(t => t.type === 'expense')
-        .reduce((acc, t) => {
-            const categoryName = t.categories?.name || 'Uncategorized';
-            acc[categoryName] = (acc[categoryName] || 0) + t.amount;
-            return acc;
-        }, {} as Record<string, number>);
+    // Spending Trends by Category Data
+    const expenseTransactions = periodTransactions.filter(t => t.type === 'expense');
+    const categoryNames = [...new Set(expenseTransactions.map(t => t.categories?.name || 'Uncategorized'))];
 
-    const spendingByCategoryData = Object.entries(categorySpending)
-        .map(([category, total]) => ({ category, total }))
-        .sort((a, b) => b.total - a.total);
+    const monthlyCategorySpending = monthNames.map(month => {
+        const monthData: { [key: string]: string | number } = { month };
+        categoryNames.forEach(cat => {
+            monthData[cat] = 0;
+        });
+        return monthData;
+    });
+    
+    expenseTransactions.forEach(t => {
+        const monthIndex = new Date(t.date).getUTCMonth();
+        const categoryName = t.categories?.name || 'Uncategorized';
+        (monthlyCategorySpending[monthIndex][categoryName] as number) += t.amount;
+    });
+
 
     return (
         <div className="space-y-6">
@@ -111,7 +119,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <IncomeVsExpenseReport data={incomeExpenseData} period={period} />
-                <SpendingByCategoryReport data={spendingByCategoryData} period={period} />
+                <SpendingByCategoryReport 
+                    data={monthlyCategorySpending} 
+                    categories={categoryNames} 
+                    period={period} 
+                />
             </div>
         </div>
     )
