@@ -55,9 +55,25 @@ export default async function DashboardLayout({
               <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                       <SidebarTrigger className="md:hidden" />
-                      <div className="flex items-baseline gap-2">
-                          <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
-                          <p className="text-sm text-muted-foreground">Welcome to your financial dashboard.</p>
+                      <div className="flex items-center gap-4">
+                          <svg
+                              role="img"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-8 w-8 text-primary flex-shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                          >
+                              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2z" />
+                              <path d="M12 12a4 4 0 1 0-4-4" />
+                          </svg>
+                          <div>
+                              <h1 className="text-lg font-semibold md:text-2xl">Hello, {userName}!</h1>
+                              <p className="text-sm text-muted-foreground">Welcome to your financial dashboard.</p>
+                          </div>
                       </div>
                   </div>
 
