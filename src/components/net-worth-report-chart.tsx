@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 import * as React from "react"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 const chartConfig = {
   netWorth: {
@@ -42,35 +43,37 @@ type NetWorthReportChartProps = {
   trend: 'up' | 'down' | 'same';
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
-          <div className="font-medium">
-            {new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
-          </div>
-          <div className="flex w-full flex-wrap items-stretch gap-2">
-            <div className="flex flex-1 justify-between leading-none">
-              <span>Net Worth</span>
-              <span className={`font-mono font-medium tabular-nums ml-4 ${data.netWorth >= 0 ? 'text-foreground' : 'text-destructive'}`}>
-                {formatCurrency(data.netWorth)}
-              </span>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return null;
-};
-
-
 export function NetWorthReportChart({ data, range, period, spendingPeriod, trend }: NetWorthReportChartProps) {
+    const { isPrivacyMode } = usePrivacy();
+
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+          const data = payload[0].payload;
+          return (
+            <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+              <div className="font-medium">
+                {new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+              </div>
+              <div className="flex w-full flex-wrap items-stretch gap-2">
+                <div className="flex flex-1 justify-between leading-none">
+                  <span>Net Worth</span>
+                  <span className={`font-mono font-medium tabular-nums ml-4 ${data.netWorth >= 0 ? 'text-foreground' : 'text-destructive'}`}>
+                    {formatCurrency(data.netWorth, isPrivacyMode)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        return null;
+    };
+
 
   const formatYAxisTick = (tick: number) => {
+    if (isPrivacyMode) return "***";
     if (Math.abs(tick) >= 1000000) return `Rp${(tick / 1000000).toFixed(1)}M`
     if (Math.abs(tick) >= 1000) return `Rp${(tick / 1000).toFixed(0)}K`
-    return formatCurrency(tick)
+    return formatCurrency(tick, isPrivacyMode)
   }
 
   const formatXAxisTick = (value: string) => {

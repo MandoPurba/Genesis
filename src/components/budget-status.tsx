@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { formatCurrency } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 import { Target } from "lucide-react"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 export type BudgetStatusData = {
     id: number;
@@ -16,6 +17,7 @@ export type BudgetStatusData = {
 }
 
 export function BudgetStatus({ budgets }: { budgets: BudgetStatusData[] }) {
+    const { isPrivacyMode } = usePrivacy();
 
     const getProgressColor = (progress: number) => {
         if (progress > 100) return 'hsl(var(--destructive))';
@@ -43,10 +45,10 @@ export function BudgetStatus({ budgets }: { budgets: BudgetStatusData[] }) {
                                             "font-semibold",
                                             budget.progress > 100 ? "text-destructive" : "text-foreground"
                                         )}>
-                                            {formatCurrency(budget.spent)}
+                                            {formatCurrency(budget.spent, isPrivacyMode)}
                                         </span>
                                         <span className="mx-1">/</span>
-                                        <span>{formatCurrency(budget.amount)}</span>
+                                        <span>{formatCurrency(budget.amount, isPrivacyMode)}</span>
                                     </p>
                                 </div>
                                 <Progress
@@ -68,5 +70,3 @@ export function BudgetStatus({ budgets }: { budgets: BudgetStatusData[] }) {
         </Card>
     )
 }
-
-    

@@ -1,11 +1,11 @@
 
-
 "use client"
 
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { formatCurrency, IconForCategory } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 type Transaction = {
     id: number;
@@ -19,6 +19,8 @@ type Transaction = {
 }
 
 export function RecentTransactions({ transactions, totalTransactions }: { transactions: Transaction[], totalTransactions: number }) {
+    const { isPrivacyMode } = usePrivacy();
+
     return (
         <div className="p-6 pt-0">
             {transactions.length > 0 ? (
@@ -51,7 +53,7 @@ export function RecentTransactions({ transactions, totalTransactions }: { transa
                                     : 'text-muted-foreground'
                                   }`}>
                                     {transaction.type === 'income' ? '+' : transaction.type === 'expense' ? '-' : ''}
-                                    {formatCurrency(transaction.amount)}
+                                    {formatCurrency(transaction.amount, isPrivacyMode)}
                                 </div>
                             </div>
                         ))}
@@ -75,4 +77,3 @@ export function RecentTransactions({ transactions, totalTransactions }: { transa
         </div>
     );
 }
-    

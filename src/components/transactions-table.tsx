@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
@@ -7,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency, IconForCategory } from "@/lib/utils"
 import { LoaderCircle, FileSearch } from "lucide-react"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 type Transaction = {
   id: number;
@@ -23,6 +25,7 @@ type Transaction = {
 const TRANSACTIONS_PER_PAGE = 100;
 
 export function TransactionsTable({ initialTransactions }: { initialTransactions: Transaction[] }) {
+  const { isPrivacyMode } = usePrivacy();
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(initialTransactions.length === TRANSACTIONS_PER_PAGE)
@@ -125,7 +128,7 @@ export function TransactionsTable({ initialTransactions }: { initialTransactions
                 : 'text-muted-foreground'
               }`}>
                 {transaction.type === 'expense' ? '-' : transaction.type === 'income' ? '+' : ''}
-                {formatCurrency(transaction.amount)}
+                {formatCurrency(transaction.amount, isPrivacyMode)}
               </TableCell>
             </TableRow>
           ))}

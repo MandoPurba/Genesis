@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 const chartConfig = {
   income: { label: "Income", color: "hsl(var(--success))" },
@@ -32,11 +33,13 @@ type ReportProps = {
 }
 
 export function IncomeVsExpenseReport({ data, period, range, spendingPeriod }: ReportProps) {
+  const { isPrivacyMode } = usePrivacy();
 
   const formatYAxisTick = (tick: number) => {
+    if (isPrivacyMode) return "***";
     if (Math.abs(tick) >= 1000000) return `Rp${(tick / 1000000).toFixed(0)}M`
     if (Math.abs(tick) >= 1000) return `Rp${(tick / 1000).toFixed(0)}K`
-    return formatCurrency(tick)
+    return formatCurrency(tick, isPrivacyMode)
   }
 
   return (
@@ -76,7 +79,7 @@ export function IncomeVsExpenseReport({ data, period, range, spendingPeriod }: R
                   <YAxis tickFormatter={formatYAxisTick} tickLine={false} axisLine={false} tickMargin={8} />
                   <ChartTooltip
                       cursor={true}
-                      content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value))} />}
+                      content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value), isPrivacyMode)} />}
                   />
                   <Legend />
                   <Area type="monotone" dataKey="income" stroke="var(--color-income)" fill="url(#colorIncome)" strokeWidth={2} name="Income" dot={false} />

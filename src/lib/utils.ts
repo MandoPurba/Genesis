@@ -24,7 +24,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const formatCurrency = (amount: number | null, currency: string = 'IDR') => {
+export const formatCurrency = (amount: number | null, isPrivacyMode: boolean = false, currency: string = 'IDR') => {
+  if (isPrivacyMode) {
+    return 'Rp ***';
+  }
   if (amount === null || isNaN(amount)) {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',

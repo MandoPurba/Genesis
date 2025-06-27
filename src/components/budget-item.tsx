@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { BudgetWithSpending } from "@/app/(dashboard)/budgets/page";
@@ -5,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { formatCurrency, IconForCategory } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { usePrivacy } from "@/contexts/privacy-context";
 
 export function BudgetItem({ budget }: { budget: BudgetWithSpending }) {
+  const { isPrivacyMode } = usePrivacy();
   const { categories, amount, spent, remaining } = budget;
   const progress = amount > 0 ? (spent / amount) * 100 : 0;
 
@@ -34,9 +37,9 @@ export function BudgetItem({ budget }: { budget: BudgetWithSpending }) {
             </div>
             <div className="flex justify-between items-baseline font-medium">
                 <span className={cn(progress > 100 ? "text-destructive" : "text-foreground")}>
-                    {formatCurrency(spent)}
+                    {formatCurrency(spent, isPrivacyMode)}
                 </span>
-                <span>{formatCurrency(amount)}</span>
+                <span>{formatCurrency(amount, isPrivacyMode)}</span>
             </div>
         </div>
         
@@ -48,9 +51,9 @@ export function BudgetItem({ budget }: { budget: BudgetWithSpending }) {
 
         <div className="text-right text-sm">
             {remaining >= 0 ? (
-                <p className="text-muted-foreground">{formatCurrency(remaining)} remaining</p>
+                <p className="text-muted-foreground">{formatCurrency(remaining, isPrivacyMode)} remaining</p>
             ) : (
-                <p className="text-destructive font-medium">{formatCurrency(Math.abs(remaining))} over budget</p>
+                <p className="text-destructive font-medium">{formatCurrency(Math.abs(remaining), isPrivacyMode)} over budget</p>
             )}
         </div>
       </CardContent>

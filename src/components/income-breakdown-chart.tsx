@@ -19,6 +19,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart"
 import { formatCurrency } from "@/lib/utils"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 export type CategoryData = {
   category: string;
@@ -39,6 +40,8 @@ const CHART_COLORS = [
 ];
 
 export function IncomeBreakdownChart({ incomeData }: { incomeData: CategoryData[] }) {
+  const { isPrivacyMode } = usePrivacy();
+
   const chartData = React.useMemo(() => {
     return incomeData.map((item, index) => ({
       ...item,
@@ -73,7 +76,7 @@ export function IncomeBreakdownChart({ incomeData }: { incomeData: CategoryData[
                     formatter={(value, name) => (
                         <div className="flex items-center justify-between w-full min-w-[120px]">
                         <span>{name}</span>
-                        <span className="ml-4 font-semibold">{formatCurrency(Number(value))}</span>
+                        <span className="ml-4 font-semibold">{formatCurrency(Number(value), isPrivacyMode)}</span>
                         </div>
                     )}
                 />}
@@ -104,5 +107,3 @@ export function IncomeBreakdownChart({ incomeData }: { incomeData: CategoryData[
     </Card>
   )
 }
-
-    

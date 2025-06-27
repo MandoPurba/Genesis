@@ -14,6 +14,7 @@ import { RightColumnTabs } from "@/components/right-column-tabs"
 import { BudgetStatus, type BudgetStatusData } from "@/components/budget-status"
 import { IncomeBreakdownChart, type CategoryData } from "@/components/income-breakdown-chart"
 import { AccountBalancesCard, type AccountData } from "@/components/account-balances-card"
+import { cookies } from "next/headers"
 
 
 // Helper function to get start and end of a month
@@ -49,6 +50,8 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   if (!user) {
       redirect('/login');
   }
+
+  const isPrivacyMode = cookies().get('privacy-mode')?.value === 'true';
 
   // --- Consolidated Data Fetching ---
   const [accountsResult, transactionsResult] = await Promise.all([
@@ -123,6 +126,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   const netBalance = currentTotals.income - currentTotals.expense;
 
   const renderPercentageChange = (change: number, positiveIsGood: boolean) => {
+    if (isPrivacyMode) {
+        return <p className="text-xs text-muted-foreground">vs last month</p>;
+    }
     if (!isFinite(change)) {
         return <p className="text-xs text-muted-foreground">No data last month</p>;
     }
@@ -281,7 +287,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <DollarSign className="w-5 h-5 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">{formatCurrency(currentTotals.income)}</div>
+            <div className="text-2xl font-bold text-success">{formatCurrency(currentTotals.income, isPrivacyMode)}</div>
             {renderPercentageChange(incomePercentageChange, true)}
           </CardContent>
         </Card>
@@ -293,7 +299,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <Wallet className="w-5 h-5 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">{formatCurrency(currentTotals.expense)}</div>
+            <div className="text-2xl font-bold text-destructive">{formatCurrency(currentTotals.expense, isPrivacyMode)}</div>
             {renderPercentageChange(expensePercentageChange, false)}
           </CardContent>
         </Card>
@@ -306,7 +312,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {formatCurrency(netBalance)}
+                {formatCurrency(netBalance, isPrivacyMode)}
             </div>
             <p className="text-xs text-muted-foreground">This month's income minus expenses.</p>
           </CardContent>
@@ -320,7 +326,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${totalNetWorth >= 0 ? 'text-foreground' : 'text-destructive'}`}>
-                {formatCurrency(totalNetWorth)}
+                {formatCurrency(totalNetWorth, isPrivacyMode)}
             </div>
             <p className="text-xs text-muted-foreground">Sum of all your account balances.</p>
           </CardContent>
@@ -335,7 +341,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
                 <Activity className="w-5 h-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(averageDailySpend)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(averageDailySpend, isPrivacyMode)}</div>
                 <p className="text-xs text-muted-foreground">Average daily expense this month.</p>
             </CardContent>
         </Card>
@@ -345,7 +351,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
                 <Percent className="w-5 h-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{savingsRate.toFixed(1)}%</div>
+                <div className="text-2xl font-bold">{isPrivacyMode ? '***' : `${savingsRate.toFixed(1)}%`}</div>
                 <p className="text-xs text-muted-foreground">Percentage of income saved.</p>
             </CardContent>
         </Card>
@@ -369,7 +375,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
                     <>
                         <div className="text-2xl font-bold">{topSpendingCategory.category}</div>
                         <p className="text-xs text-muted-foreground">
-                            <span className="font-semibold">{formatCurrency(topSpendingCategory.total)}</span> spent this month.
+                            <span className="font-semibold">{formatCurrency(topSpendingCategory.total, isPrivacyMode)}</span> spent this month.
                         </p>
                     </>
                 ) : (

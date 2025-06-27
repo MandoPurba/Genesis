@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -14,6 +15,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart"
 import { formatCurrency } from "@/lib/utils"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 // Define a type for our category data
 export type CategoryExpenseData = {
@@ -32,6 +34,8 @@ const CHART_COLORS = [
 ];
 
 export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'>[] }) {
+  const { isPrivacyMode } = usePrivacy();
+
   const chartData = React.useMemo(() => {
     if (!data) return [];
     return data.map((item, index) => ({
@@ -75,7 +79,7 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
                 formatter={(value, name) => (
                     <div className="flex items-center justify-between w-full min-w-[120px]">
                       <span>{name}</span>
-                      <span className="ml-4 font-semibold">{formatCurrency(Number(value))}</span>
+                      <span className="ml-4 font-semibold">{formatCurrency(Number(value), isPrivacyMode)}</span>
                     </div>
                 )}
               />}

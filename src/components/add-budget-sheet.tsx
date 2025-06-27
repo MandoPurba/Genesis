@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast"
 import { PlusCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 // Updated type to match schema (bigint -> number)
 type Category = { id: number; name: string; }
@@ -37,6 +38,7 @@ function SubmitButton() {
 export function AddBudgetSheet({ categories }: { categories: Category[] }) {
   const { toast } = useToast()
   const router = useRouter()
+  const { isPrivacyMode } = usePrivacy();
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addBudget, null)
 
@@ -103,7 +105,7 @@ export function AddBudgetSheet({ categories }: { categories: Category[] }) {
                 id="amount-display"
                 type="text"
                 placeholder="e.g., Rp 1.000.000"
-                value={amountValue === '' ? '' : formatCurrency(Number(amountValue))}
+                value={amountValue === '' ? '' : formatCurrency(Number(amountValue), isPrivacyMode)}
                 onChange={handleAmountChange}
                 required
               />

@@ -4,6 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatCurrency, IconForAccountType } from "@/lib/utils"
 import { Landmark } from "lucide-react"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 export type AccountData = {
     id: number;
@@ -13,6 +14,8 @@ export type AccountData = {
 }
 
 export function AccountBalancesCard({ accounts }: { accounts: AccountData[] }) {
+    const { isPrivacyMode } = usePrivacy();
+
     return (
         <Card>
             <CardHeader>
@@ -30,7 +33,7 @@ export function AccountBalancesCard({ accounts }: { accounts: AccountData[] }) {
                                     <IconForAccountType accountType={account.type || 'Other'} className="w-5 h-5 text-muted-foreground" />
                                     <span className="font-medium">{account.name}</span>
                                 </div>
-                                <span className="font-semibold">{formatCurrency(account.balance)}</span>
+                                <span className="font-semibold">{formatCurrency(account.balance, isPrivacyMode)}</span>
                             </div>
                         ))}
                     </div>

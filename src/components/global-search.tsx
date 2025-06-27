@@ -26,6 +26,7 @@ import {
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { formatCurrency, IconForCategory } from "@/lib/utils"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 type Transaction = {
   id: number;
@@ -48,6 +49,7 @@ const navLinks = [
 
 export function GlobalSearch() {
   const router = useRouter()
+  const { isPrivacyMode } = usePrivacy()
   const [open, setOpen] = React.useState(false)
   const [transactions, setTransactions] = React.useState<Transaction[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -161,7 +163,7 @@ export function GlobalSearch() {
                       </div>
                     </div>
                     <span className={`font-mono text-sm ${transaction.type === 'income' ? 'text-success' : ''}`}>
-                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                      {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, isPrivacyMode)}
                     </span>
                   </div>
                 </CommandItem>

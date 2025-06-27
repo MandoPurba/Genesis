@@ -2,8 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AddAccountSheet } from "@/components/add-account-sheet";
-import { FileSearch, Landmark } from "lucide-react";
+import { FileSearch } from "lucide-react";
 import { formatCurrency, IconForAccountType } from "@/lib/utils";
+import { cookies } from "next/headers";
 
 export type Account = {
   id: number;
@@ -22,6 +23,8 @@ export default async function AccountsPage() {
   if (!user) {
     redirect('/login');
   }
+
+  const isPrivacyMode = cookies().get('privacy-mode')?.value === 'true';
 
   const [accountsResult, transactionsResult] = await Promise.all([
     supabase
@@ -124,7 +127,7 @@ export default async function AccountsPage() {
                 </CardHeader>
                 <CardContent className="mt-auto">
                     <p className="text-xs text-muted-foreground">Current Balance</p>
-                    <p className="text-2xl font-bold">{formatCurrency(account.balance)}</p>
+                    <p className="text-2xl font-bold">{formatCurrency(account.balance, isPrivacyMode)}</p>
                 </CardContent>
               </Card>
             ))}

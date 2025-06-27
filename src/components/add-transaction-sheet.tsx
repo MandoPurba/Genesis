@@ -25,6 +25,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { PlusCircle, AlertCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { useRouter } from "next/navigation"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 type Category = { id: number; name: string; type: 'income' | 'expense' }
 type Account = { id: number; name: string; balance: number; }
@@ -42,6 +43,7 @@ function SubmitButton({ disabled }: { disabled?: boolean }) {
 export function AddTransactionSheet({ categories, accounts, budgetInfo }: { categories: Category[]; accounts: Account[]; budgetInfo: BudgetInfo }) {
   const { toast } = useToast()
   const router = useRouter()
+  const { isPrivacyMode } = usePrivacy();
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addTransaction, null)
 
@@ -103,7 +105,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
         const potentialRemaining = budget - spent - newAmount
 
         if (potentialRemaining < 0) {
-          const overage = formatCurrency(Math.abs(potentialRemaining))
+          const overage = formatCurrency(Math.abs(potentialRemaining), isPrivacyMode)
           setOverBudgetWarning(`This transaction will exceed your budget for this category by ${overage}.`)
         } else {
           setOverBudgetWarning(null)
@@ -114,7 +116,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
     } else {
       setOverBudgetWarning(null)
     }
-  }, [selectedCategoryId, amountValue, transactionType, budgetInfo])
+  }, [selectedCategoryId, amountValue, transactionType, budgetInfo, isPrivacyMode])
 
   // Effect for insufficient balance warning
   useEffect(() => {
@@ -125,14 +127,14 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
         const selectedAccount = accounts.find(acc => acc.id === accountIdNum);
 
         if (selectedAccount && amountNum > selectedAccount.balance) {
-            setInsufficientBalanceWarning(`Transaction exceeds account balance of ${formatCurrency(selectedAccount.balance)}.`);
+            setInsufficientBalanceWarning(`Transaction exceeds account balance of ${formatCurrency(selectedAccount.balance, isPrivacyMode)}.`);
         } else {
             setInsufficientBalanceWarning(null);
         }
     } else {
         setInsufficientBalanceWarning(null);
     }
-  }, [selectedAccountId, fromAccountId, amountValue, transactionType, accounts]);
+  }, [selectedAccountId, fromAccountId, amountValue, transactionType, accounts, isPrivacyMode]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -191,7 +193,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
                 id="amount-display"
                 type="text"
                 placeholder="e.g., Rp 50.000"
-                value={amountValue === '' ? '' : formatCurrency(Number(amountValue))}
+                value={amountValue === '' ? '' : formatCurrency(Number(amountValue), isPrivacyMode)}
                 onChange={handleAmountChange}
                 required
               />
@@ -214,7 +216,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
                     <SelectContent>
                       {accounts.map(account => (
                         <SelectItem key={account.id} value={account.id.toString()}>
-                          {account.name} ({formatCurrency(account.balance)})
+                          {account.name} ({formatCurrency(account.balance, isPrivacyMode)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -230,7 +232,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
                     <SelectContent>
                       {accounts.map(account => (
                         <SelectItem key={account.id} value={account.id.toString()} disabled={account.id === Number(fromAccountId)}>
-                          {account.name} ({formatCurrency(account.balance)})
+                          {account.name} ({formatCurrency(account.balance, isPrivacyMode)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -249,7 +251,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
                     <SelectContent>
                       {accounts.map(account => (
                         <SelectItem key={account.id} value={account.id.toString()}>
-                          {account.name} ({formatCurrency(account.balance)})
+                          {account.name} ({formatCurrency(account.balance, isPrivacyMode)})
                         </SelectItem>
                       ))}
                     </SelectContent>
