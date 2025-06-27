@@ -48,8 +48,8 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
           <div className="w-full max-w-sm">
             <Card className="border-gray-200/20 bg-white/30 text-card-foreground shadow-2xl backdrop-blur-xl">
               <CardHeader className="text-center">
-                <CardTitle className="text-3xl font-bold tracking-tight">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
-                <CardDescription className="text-muted-foreground">
+                <CardTitle className="text-3xl font-bold tracking-tight dark:text-slate-900">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
+                <CardDescription className="text-muted-foreground dark:text-slate-800">
                   {isSignUpView ? 'Enter your details to get started.' : 'Sign in to access your dashboard.'}
                 </CardDescription>
               </CardHeader>
@@ -67,14 +67,14 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
                 <div className="mt-4 text-center text-sm">
                   {isSignUpView ? (
                     <>
-                      <span className="text-muted-foreground">Already have an account? </span>
+                      <span className="text-muted-foreground dark:text-slate-800">Already have an account? </span>
                       <Link href="/login" className="underline text-primary hover:text-primary/80 font-semibold">
                         Sign in
                       </Link>
                     </>
                   ) : (
                     <>
-                      <span className="text-muted-foreground">Don&apos;t have an account? </span>
+                      <span className="text-muted-foreground dark:text-slate-800">Don&apos;t have an account? </span>
                       <Link href="/login?view=signup" className="underline text-primary hover:text-primary/80 font-semibold">
                         Sign up
                       </Link>
