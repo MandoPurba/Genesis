@@ -1,4 +1,5 @@
 
+
 import {
   Card,
   CardContent,
@@ -6,11 +7,14 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
-import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale, PiggyBank, Activity, Percent, List, Trophy, Icon } from "lucide-react"
+import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale, PiggyBank, Activity, Percent, List, Trophy } from "lucide-react"
 import { redirect } from "next/navigation"
 import { OverviewChart } from "@/components/overview-chart"
-import { formatCurrency, IconForCategory } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 import { RightColumnTabs } from "@/components/right-column-tabs"
+import { BudgetStatus, type BudgetStatusData } from "@/components/budget-status"
+import { IncomeBreakdownChart, type CategoryData } from "@/components/income-breakdown-chart"
+
 
 // Helper function to get start and end of a month
 const getMonthDateRange = (date: Date) => {
@@ -49,7 +53,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   // --- Single, consolidated data fetch for all transaction-related data ---
   const { data: allTransactions, error: allTransactionsError } = await supabase
     .from('transactions')
-    .select('id, date, type, amount, description, categories ( name )')
+    .select('id, date, type, amount, description, categories ( id, name )') // Also fetch category ID
     .eq('user_id', user.id)
     .order('date', { ascending: false });
 
@@ -188,6 +192,37 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   const totalTransactionsThisMonth = currentMonthTransactions.length;
   const topSpendingCategory = categoryExpenseData.length > 0 ? categoryExpenseData[0] : null;
 
+  // --- Data for New Bottom Row Cards ---
+  const { data: budgets } = await supabase
+    .from('budgets')
+    .select('id, amount, categories (id, name)')
+    .eq('user_id', user.id)
+    .eq('start_date', currentMonthRange.start.split('T')[0]);
+  
+  const budgetsWithSpending: BudgetStatusData[] = (budgets || []).map(b => {
+    const spent = b.categories ? categoryExpenses[b.categories.name] || 0 : 0;
+    const progress = b.amount > 0 ? (spent / b.amount) * 100 : 0;
+    return {
+      id: b.id,
+      name: b.categories?.name || "Uncategorized",
+      amount: b.amount,
+      spent: spent,
+      progress: progress
+    }
+  }).sort((a, b) => b.progress - a.progress); // Sort by most spent first
+
+  const incomeByCategory = currentMonthTransactions
+    .filter(t => t.type === 'income')
+    .reduce((acc, t) => {
+        const categoryName = t.categories?.name || 'Uncategorized';
+        acc[categoryName] = (acc[categoryName] || 0) + t.amount;
+        return acc;
+    }, {} as { [key: string]: number });
+
+  const incomeByCategoryData: CategoryData[] = Object.entries(incomeByCategory)
+      .map(([category, total]) => ({ category, total }))
+      .sort((a, b) => b.total - a.total);
+
 
   return (
     <div className="space-y-4">
@@ -302,7 +337,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       </div>
 
 
-      {/* Bottom Row: Charts & Other Info */}
+      {/* Third Row: Charts & Other Info */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Main Chart */}
         <div className="lg:col-span-2">
@@ -317,6 +352,15 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             />
         </div>
       </div>
+      
+      {/* Fourth Row: New Analytics */}
+       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <BudgetStatus budgets={budgetsWithSpending} />
+          <IncomeBreakdownChart incomeData={incomeByCategoryData} />
+       </div>
+
     </div>
   )
 }
+
+    

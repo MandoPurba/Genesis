@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Card } from "@/components/ui/card";
@@ -23,21 +24,23 @@ type RightColumnTabsProps = {
 
 export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsProps) {
     return (
-        <Card className="flex flex-col">
-            <Tabs defaultValue="categories" className="flex flex-col">
+        <Card className="flex flex-col h-full">
+            <Tabs defaultValue="categories" className="flex flex-col flex-1">
                 <div className="p-4">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="categories">Expense Categories</TabsTrigger>
                         <TabsTrigger value="recent">Recent</TabsTrigger>
                     </TabsList>
                 </div>
-                <TabsContent value="categories">
+                <TabsContent value="categories" className="flex-1">
                     <CategoryChart data={categoryData} />
                 </TabsContent>
-                <TabsContent value="recent">
+                <TabsContent value="recent" className="flex-1">
                     <RecentTransactions transactions={transactions} />
                 </TabsContent>
             </Tabs>
         </Card>
     )
 }
+
+    

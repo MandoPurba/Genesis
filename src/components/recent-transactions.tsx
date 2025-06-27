@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import { ArrowRight } from "lucide-react"
@@ -53,7 +54,7 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center rounded-lg bg-muted/50 p-4">
+                <div className="flex flex-col items-center justify-center h-full text-center rounded-lg bg-muted/50 p-4 min-h-[150px]">
                     <p className="text-sm text-muted-foreground">No recent transactions found.</p>
                     <p className="text-xs text-muted-foreground mt-1">When you add transactions, they will appear here.</p>
                 </div>
@@ -61,3 +62,5 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
         </div>
     );
 }
+
+    

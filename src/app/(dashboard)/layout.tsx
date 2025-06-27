@@ -1,4 +1,5 @@
 
+
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { MainNav } from "@/components/main-nav"
@@ -52,10 +53,10 @@ export default async function DashboardLayout({
       <MobileBlocker>
         <SidebarProvider>
           <div className="grid h-screen w-full grid-rows-[auto_1fr] bg-background">
-              <header className="flex items-center justify-between gap-4 p-8 pb-0">
+              <header className="flex items-center justify-between gap-4 p-4 pb-0">
                   <div className="flex items-center gap-4">
                       <SidebarTrigger className="md:hidden" />
-                      <div className="flex items-center gap-4 pl-4">
+                      <div className="flex items-center gap-4 pl-4 md:pl-0">
                           <svg
                               role="img"
                               viewBox="0 0 24 24"
@@ -95,7 +96,7 @@ export default async function DashboardLayout({
                   </div>
               </header>
 
-              <div className="grid grid-cols-[auto_1fr] gap-8 p-8 pt-6 overflow-y-hidden">
+              <div className="grid grid-cols-[auto_1fr] gap-4 p-4 pt-6 overflow-y-hidden">
                 <Sidebar side="left" variant="floating" collapsible="icon" className="z-40">
                   <SidebarContent className="pt-2">
                     <MainNav />
@@ -114,3 +115,5 @@ export default async function DashboardLayout({
       </MobileBlocker>
   )
 }
+
+    
