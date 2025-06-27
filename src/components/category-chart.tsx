@@ -65,7 +65,7 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
       <CardContent className="flex-1 pt-6 pb-0">
         <ChartContainer
           config={chartConfig}
-          className="mx-auto aspect-square max-h-96"
+          className="mx-auto aspect-square max-h-80"
         >
           <PieChart>
             <ChartTooltip
@@ -84,7 +84,7 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
               data={chartData}
               dataKey="total"
               nameKey="category"
-              innerRadius={80}
+              innerRadius={70}
               strokeWidth={5}
             >
                 {chartData.map((entry, index) => (
