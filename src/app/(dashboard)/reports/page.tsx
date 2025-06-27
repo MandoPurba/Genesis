@@ -58,57 +58,73 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         });
     }
     const monthlyPoints = Array.from(monthlyNetWorthMap.values()).sort((a,b) => a.date.getTime() - b.date.getTime());
-
-
-    const validRanges = ['1y', '5y', 'all'] as const;
-    type Range = typeof validRanges[number];
-    const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '5y';
     
-    // Filter monthly points by range
-    const today = new Date();
-    let filteredMonthlyPoints = monthlyPoints;
-    if (range === '1y') {
-        const oneYearAgo = new Date(today);
-        oneYearAgo.setFullYear(today.getFullYear() - 1);
-        filteredMonthlyPoints = monthlyPoints.filter(d => d.date >= oneYearAgo);
-    } else if (range === '5y') {
-        const fiveYearsAgo = new Date(today);
-        fiveYearsAgo.setFullYear(today.getFullYear() - 5);
-        filteredMonthlyPoints = monthlyPoints.filter(d => d.date >= fiveYearsAgo);
-    }
-    
-    // Prepare segmented data for the chart
-    const netWorthDataForChart = filteredMonthlyPoints.map(point => ({
-        date: point.date.toISOString(),
+    // Initialize data structure for the chart with trend properties
+    const monthlyPointsWithTrend = monthlyPoints.map(point => ({
+        date: point.date,
         netWorth: point.netWorth,
         up: null as number | null,
         down: null as number | null,
         stable: null as number | null,
     }));
 
-    if (netWorthDataForChart.length > 0) {
-        if (netWorthDataForChart.length === 1) {
-            netWorthDataForChart[0].stable = netWorthDataForChart[0].netWorth;
-        } else {
-            for (let i = 1; i < netWorthDataForChart.length; i++) {
-                const current = netWorthDataForChart[i];
-                const prev = netWorthDataForChart[i-1];
-                
-                if (current.netWorth > prev.netWorth) {
-                    current.up = current.netWorth;
-                    prev.up = prev.netWorth;
-                } else if (current.netWorth < prev.netWorth) {
-                    current.down = current.netWorth;
-                    prev.down = prev.netWorth;
-                } else {
-                    current.stable = current.netWorth;
-                    prev.stable = prev.netWorth;
-                }
+    // Calculate trend colors across the entire dataset
+    if (monthlyPointsWithTrend.length > 1) {
+        for (let i = 1; i < monthlyPointsWithTrend.length; i++) {
+            const prev = monthlyPointsWithTrend[i-1];
+            const current = monthlyPointsWithTrend[i];
+
+            // Set values on both prev and current to create continuous colored segments
+            if (current.netWorth > prev.netWorth) {
+                prev.up = prev.netWorth;
+                current.up = current.netWorth;
+            }
+            if (current.netWorth < prev.netWorth) {
+                prev.down = prev.netWorth;
+                current.down = current.netWorth;
+            }
+            if (current.netWorth === prev.netWorth) {
+                // If stable, continue the previous segment color if it exists, otherwise start a stable segment
+                if(prev.up) { prev.up = prev.netWorth; current.up = current.netWorth }
+                else if (prev.down) { prev.down = prev.netWorth; current.down = current.netWorth }
+                else { prev.stable = prev.netWorth; current.stable = current.netWorth; }
             }
         }
+    } else if (monthlyPointsWithTrend.length === 1) {
+        // A single point is considered stable
+        monthlyPointsWithTrend[0].stable = monthlyPointsWithTrend[0].netWorth;
+    }
+
+    const validRanges = ['1y', '5y', 'all'] as const;
+    type Range = typeof validRanges[number];
+    const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '5y';
+    
+    // Filter the trend-calculated data based on the selected range
+    const today = new Date();
+    let filteredMonthlyPoints = monthlyPointsWithTrend;
+    if (range === '1y') {
+        const oneYearAgo = new Date(today);
+        oneYearAgo.setFullYear(today.getFullYear() - 1);
+        const anchorPoint = monthlyPointsWithTrend.findLast(p => p.date < oneYearAgo);
+        const pointsInWindow = monthlyPointsWithTrend.filter(d => d.date >= oneYearAgo);
+        filteredMonthlyPoints = anchorPoint ? [anchorPoint, ...pointsInWindow] : pointsInWindow;
+    } else if (range === '5y') {
+        const fiveYearsAgo = new Date(today);
+        fiveYearsAgo.setFullYear(today.getFullYear() - 5);
+        const anchorPoint = monthlyPointsWithTrend.findLast(p => p.date < fiveYearsAgo);
+        const pointsInWindow = monthlyPointsWithTrend.filter(d => d.date >= fiveYearsAgo);
+        filteredMonthlyPoints = anchorPoint ? [anchorPoint, ...pointsInWindow] : pointsInWindow;
     }
     
-    // --- 2. & 3. Calculations for new reports ---
+    const netWorthDataForChart = filteredMonthlyPoints.map(point => ({
+        date: point.date.toISOString(),
+        netWorth: point.netWorth,
+        up: point.up,
+        down: point.down,
+        stable: point.stable,
+    }));
+    
+    // --- 2. & 3. Calculations for other reports ---
     const validPeriods = ['this_year', 'last_year'] as const;
     type Period = typeof validPeriods[number];
     const period: Period = validPeriods.includes(searchParams.period as any) ? searchParams.period as Period : 'this_year';
@@ -137,7 +153,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     });
     const incomeExpenseData = Array.from(monthlyDataMap.entries()).map(([month, totals]) => ({ month, ...totals }));
 
-    // Spending by Category Trend Data (for multi-line chart)
+    // Spending by Category Trend Data
     const categoryMonthlySpending: { [month: string]: { [category: string]: number } } = {};
     monthNames.forEach(m => categoryMonthlySpending[m] = {});
 
