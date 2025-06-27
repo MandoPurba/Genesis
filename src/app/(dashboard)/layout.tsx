@@ -55,7 +55,7 @@ export default async function DashboardLayout({
               <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                       <SidebarTrigger className="md:hidden" />
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 pl-4">
                           <svg
                               role="img"
                               viewBox="0 0 24 24"
