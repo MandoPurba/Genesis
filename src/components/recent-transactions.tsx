@@ -1,3 +1,4 @@
+
 "use client"
 
 import { formatCurrency, IconForCategory } from "@/lib/utils"
@@ -22,11 +23,14 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
                         <div key={transaction.id} className="flex items-center">
                             <div className="flex-1 flex items-center gap-4">
                                 <div className="p-3 bg-secondary rounded-full flex items-center justify-center">
-                                  <IconForCategory categoryName={transaction.categories?.name || 'Uncategorized'} className="text-muted-foreground" />
+                                  <IconForCategory 
+                                    categoryName={transaction.type === 'transfer' ? 'Transfer' : (transaction.categories?.name || 'Uncategorized')} 
+                                    className="text-muted-foreground" 
+                                  />
                                 </div>
                                 <div>
                                     <p className="text-sm font-medium leading-none">
-                                        {transaction.description || transaction.categories?.name || 'Transaction'}
+                                        {transaction.description || (transaction.type === 'transfer' ? 'Transfer' : transaction.categories?.name) || 'Transaction'}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
                                         {new Date(transaction.date).toLocaleDateString('en-US', {
@@ -36,8 +40,12 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
                                     </p>
                                 </div>
                             </div>
-                            <div className={`ml-auto font-medium ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                                {transaction.type === 'income' ? '+' : '-'}
+                            <div className={`ml-auto font-medium ${
+                                transaction.type === 'income' ? 'text-success' 
+                                : transaction.type === 'expense' ? 'text-destructive' 
+                                : 'text-muted-foreground'
+                              }`}>
+                                {transaction.type === 'income' ? '+' : transaction.type === 'expense' ? '-' : ''}
                                 {formatCurrency(transaction.amount)}
                             </div>
                         </div>
