@@ -55,7 +55,7 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
 
   if (!data || data.length === 0 || data.every(d => d.income === 0 && d.expense === 0)) {
     return (
-      <Card className="flex flex-col h-full">
+      <Card className="flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Income vs Expenses</CardTitle>
@@ -71,7 +71,7 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
           </div>
         </CardHeader>
         <CardContent className="flex items-center justify-center flex-1">
-          <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50">
+          <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50 p-4 min-h-[200px]">
             <p className="text-muted-foreground">No transaction data for this period to display the chart.</p>
           </div>
         </CardContent>
@@ -80,7 +80,7 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
   }
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col">
        <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Income vs Expenses</CardTitle>

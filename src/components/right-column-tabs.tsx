@@ -24,15 +24,15 @@ type RightColumnTabsProps = {
 
 export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsProps) {
     return (
-        <Card className="flex flex-col h-full">
-            <Tabs defaultValue="categories" className="flex flex-col h-full">
+        <Card className="flex flex-col">
+            <Tabs defaultValue="categories" className="flex flex-col">
                 <div className="p-4">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="categories">Categories</TabsTrigger>
                         <TabsTrigger value="recent">Recent</TabsTrigger>
                     </TabsList>
                 </div>
-                <TabsContent value="categories" className="flex-1 overflow-y-auto min-h-0">
+                <TabsContent value="categories">
                     <CategoryChart data={categoryData} />
                 </TabsContent>
                 <TabsContent value="recent">
