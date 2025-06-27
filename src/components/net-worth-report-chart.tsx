@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
   Card,
   CardContent,
@@ -71,7 +71,7 @@ export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
       <CardContent className="pb-0 pl-2">
          {data.length > 1 ? (
             <ChartContainer config={chartConfig} className="w-full" style={{ height: '350px' }}>
-                <LineChart
+                <AreaChart
                     accessibilityLayer
                     data={data}
                     margin={{
@@ -81,6 +81,12 @@ export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
                         bottom: 5,
                     }}
                 >
+                    <defs>
+                        <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-netWorth)" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="var(--color-netWorth)" stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
                     <CartesianGrid vertical={false} />
                     <XAxis
                         dataKey="date"
@@ -112,15 +118,17 @@ export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
                             />
                         }
                     />
-                    <Line
+                    <Area
                         dataKey="netWorth"
                         type="monotone"
                         stroke="var(--color-netWorth)"
                         strokeWidth={2}
-                        dot={false}
+                        fillOpacity={1}
+                        fill="url(#colorNetWorth)"
                         name="Net Worth"
+                        dot={false}
                     />
-                </LineChart>
+                </AreaChart>
             </ChartContainer>
          ) : (
             <div className="flex items-center justify-center w-full text-center rounded-lg bg-muted/50 p-4 min-h-[350px]">
