@@ -39,45 +39,67 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     const transactions = allTransactions || [];
     const today = new Date();
 
-    // --- 1. Monthly Net Cash Flow Calculations ---
-    const monthlyFlowMap = new Map<string, { income: number; expense: number }>();
-    transactions.forEach(t => {
-        const monthKey = new Date(t.date).toISOString().slice(0, 7); // YYYY-MM
-        const monthData = monthlyFlowMap.get(monthKey) || { income: 0, expense: 0 };
-        if (t.type === 'income') {
-            monthData.income += t.amount;
-        } else if (t.type === 'expense') {
-            monthData.expense += t.amount;
-        }
-        monthlyFlowMap.set(monthKey, monthData);
-    });
+    // --- 1. Net Worth Trend Calculations ---
+    const monthlyNetWorthMap = new Map<string, number>();
+    let currentNetWorth = 0;
+    
+    if (transactions.length > 0) {
+        let lastMonthKey = new Date(transactions[0].date).toISOString().slice(0, 7);
 
-    const monthlyFlows = Array.from(monthlyFlowMap.entries()).map(([monthKey, data]) => {
+        transactions.forEach(t => {
+            const monthKey = new Date(t.date).toISOString().slice(0, 7);
+            
+            // Fill in any gaps for months with no transactions
+            if (monthKey !== lastMonthKey) {
+                let tempDate = new Date(`${lastMonthKey}-02T00:00:00Z`); // Use day 2 to avoid timezone issues
+                tempDate.setUTCMonth(tempDate.getUTCMonth() + 1);
+                while(tempDate.toISOString().slice(0,7) < monthKey) {
+                    monthlyNetWorthMap.set(tempDate.toISOString().slice(0,7), currentNetWorth);
+                    tempDate.setUTCMonth(tempDate.getUTCMonth() + 1);
+                }
+            }
+            
+            if (t.type === 'income') {
+                currentNetWorth += t.amount;
+            } else if (t.type === 'expense') {
+                currentNetWorth -= t.amount;
+            }
+            // Transfers between own accounts don't affect net worth
+            
+            monthlyNetWorthMap.set(monthKey, currentNetWorth);
+            lastMonthKey = monthKey;
+        });
+    }
+
+    const netWorthData = Array.from(monthlyNetWorthMap.entries()).map(([monthKey, data]) => {
         return {
-            date: new Date(`${monthKey}-01T00:00:00Z`), // Use first day of month for sorting
-            netFlow: data.income - data.expense,
+            date: new Date(`${monthKey}-01T12:00:00Z`).toISOString(), // Use a consistent time for sorting
+            netWorth: data,
         };
-    }).sort((a, b) => a.date.getTime() - b.date.getTime());
+    }).sort((a, b) => new Date(a.date).getTime() - b.date.getTime());
 
     const validRanges = ['1y', '5y', 'all'] as const;
     type Range = typeof validRanges[number];
     const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '1y';
     
-    let filteredMonthlyFlows = monthlyFlows;
-    if (range === '1y') {
-        const oneYearAgo = new Date(today);
-        oneYearAgo.setFullYear(today.getFullYear() - 1);
-        filteredMonthlyFlows = monthlyFlows.filter(d => d.date >= oneYearAgo);
-    } else if (range === '5y') {
-        const fiveYearsAgo = new Date(today);
-        fiveYearsAgo.setFullYear(today.getFullYear() - 5);
-        filteredMonthlyFlows = monthlyFlows.filter(d => d.date >= fiveYearsAgo);
+    let filteredNetWorthData = netWorthData;
+    if (range !== 'all' && netWorthData.length > 0) {
+        const rangeStart = new Date();
+        if (range === '1y') {
+            rangeStart.setFullYear(today.getFullYear() - 1);
+        } else if (range === '5y') {
+            rangeStart.setFullYear(today.getFullYear() - 5);
+        }
+        
+        const anchorIndex = netWorthData.findIndex(d => new Date(d.date) >= rangeStart);
+        const startIndex = anchorIndex > 0 ? anchorIndex - 1 : anchorIndex;
+        
+        if (startIndex !== -1) {
+            filteredNetWorthData = netWorthData.slice(startIndex);
+        } else {
+            filteredNetWorthData = netWorthData.length > 0 ? [netWorthData[netWorthData.length - 1]] : [];
+        }
     }
-    
-    const cashFlowDataForChart = filteredMonthlyFlows.map(point => ({
-        date: point.date.toISOString(),
-        netFlow: point.netFlow,
-    }));
     
     // --- 2. & 3. Calculations for other reports ---
     const validPeriods = ['this_year', 'last_year'] as const;
@@ -146,7 +168,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-                <NetWorthReportChart data={cashFlowDataForChart} range={range} period={period} spendingPeriod={spendingPeriod} />
+                <NetWorthReportChart data={filteredNetWorthData} range={range} period={period} spendingPeriod={spendingPeriod} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

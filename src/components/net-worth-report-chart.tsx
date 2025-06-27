@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -16,16 +17,25 @@ import {
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
+import * as React from "react"
 
 const chartConfig = {
-  netFlow: {
-    label: "Net Flow",
-    color: "hsl(var(--chart-1))",
+  netWorth: {
+    label: "Net Worth",
+  },
+  positive: {
+    color: "hsl(var(--success))",
+  },
+  negative: {
+    color: "hsl(var(--destructive))",
+  },
+  neutral: {
+    color: "hsl(var(--primary))",
   },
 } satisfies ChartConfig
 
 type NetWorthReportChartProps = {
-  data: { date: string; netFlow: number }[];
+  data: { date: string; netWorth: number }[];
   range: '1y' | '5y' | 'all';
   period: 'this_year' | 'last_year';
   spendingPeriod: 'this_year' | 'last_year';
@@ -41,9 +51,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
           </div>
           <div className="flex w-full flex-wrap items-stretch gap-2">
             <div className="flex flex-1 justify-between leading-none">
-              <span>Net Flow</span>
-              <span className={`font-mono font-medium tabular-nums ml-4 ${data.netFlow >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {formatCurrency(data.netFlow)}
+              <span>Net Worth</span>
+              <span className={`font-mono font-medium tabular-nums ml-4 ${data.netWorth >= 0 ? 'text-foreground' : 'text-destructive'}`}>
+                {formatCurrency(data.netWorth)}
               </span>
             </div>
           </div>
@@ -69,12 +79,35 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
     });
   }
 
+  const gradientStops = React.useMemo(() => {
+    if (data.length < 2) return [];
+    
+    const stops = [];
+    for(let i = 1; i < data.length; i++) {
+        const prev = data[i-1];
+        const curr = data[i];
+
+        const prevOffset = `${((i - 1) / (data.length - 1)) * 100}%`;
+        const currOffset = `${(i / (data.length - 1)) * 100}%`;
+        
+        const prevColor = i === 1 
+          ? (curr.netWorth > prev.netWorth ? chartConfig.positive.color : curr.netWorth < prev.netWorth ? chartConfig.negative.color : chartConfig.neutral.color)
+          : (prev.netWorth > data[i-2].netWorth ? chartConfig.positive.color : prev.netWorth < data[i-2].netWorth ? chartConfig.negative.color : chartConfig.neutral.color)
+        
+        const currColor = curr.netWorth > prev.netWorth ? chartConfig.positive.color : curr.netWorth < prev.netWorth ? chartConfig.negative.color : chartConfig.neutral.color;
+
+        stops.push(<stop key={`stop-prev-${i}`} offset={prevOffset} stopColor={prevColor} />);
+        stops.push(<stop key={`stop-curr-${i}`} offset={currOffset} stopColor={currColor} />);
+    }
+    return stops;
+  }, [data]);
+
   return (
     <Card>
        <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Monthly Net Cash Flow</CardTitle>
-            <CardDescription>Your monthly income minus expenses.</CardDescription>
+            <CardTitle>Net Worth Trend</CardTitle>
+            <CardDescription>Your cumulative net worth over time.</CardDescription>
           </div>
           <div className="flex items-center gap-2 p-1 bg-muted rounded-md">
             <Button variant={range === '1y' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
@@ -96,6 +129,11 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
                     data={data}
                     margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
                 >
+                    <defs>
+                        <linearGradient id="color-gradient" x1="0" y1="0" x2="1" y2="0">
+                            {gradientStops}
+                        </linearGradient>
+                    </defs>
                     <CartesianGrid vertical={false} />
                     <XAxis
                         dataKey="date"
@@ -110,6 +148,7 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
                         axisLine={false}
                         tickMargin={8}
                         tickFormatter={formatYAxisTick}
+                        domain={['dataMin - 100000', 'dataMax + 100000']}
                     />
                     <ChartTooltipWrapper
                         cursor={true}
@@ -117,18 +156,18 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
                     />
                     <ReferenceLine y={0} stroke="hsl(var(--border))" strokeDasharray="3 3" />
                     <Area 
-                      dataKey="netFlow" 
+                      dataKey="netWorth" 
                       type="monotone" 
-                      stroke="var(--color-netFlow)" 
-                      fill="var(--color-netFlow)"
+                      stroke="url(#color-gradient)"
+                      fill="url(#color-gradient)"
                       fillOpacity={0.4}
                       strokeWidth={2} 
-                      dot={false} />
+                    />
                 </AreaChart>
             </ChartContainer>
          ) : (
             <div className="flex items-center justify-center w-full text-center rounded-lg bg-muted/50 p-4 min-h-[350px]">
-                <p className="text-muted-foreground">Not enough data to display the net flow trend.</p>
+                <p className="text-muted-foreground">Not enough data to display the net worth trend.</p>
             </div>
          )}
       </CardContent>
