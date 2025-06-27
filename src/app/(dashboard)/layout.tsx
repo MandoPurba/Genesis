@@ -6,11 +6,12 @@ import { MainNav } from "@/components/main-nav"
 import { UserNav } from "@/components/user-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
-import { Bell, MessageCircle } from "lucide-react"
+import { MessageCircle } from "lucide-react"
 import { SupabaseConfigWarning } from "@/components/supabase-config-warning"
 import { Sidebar, SidebarContent, SidebarFooter, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { MobileBlocker } from "@/components/mobile-blocker"
 import { GlobalSearch } from "@/components/global-search"
+import { NotificationDropdown } from "@/components/notification-dropdown"
 
 export default async function DashboardLayout({
   children,
@@ -88,10 +89,7 @@ export default async function DashboardLayout({
                               <MessageCircle className="h-5 w-5" />
                               <span className="sr-only">Messages</span>
                           </Button>
-                          <Button variant="ghost" size="icon" className="rounded-full">
-                              <Bell className="h-5 w-5" />
-                              <span className="sr-only">Notifications</span>
-                          </Button>
+                          <NotificationDropdown />
                       </div>
                   </div>
               </header>
