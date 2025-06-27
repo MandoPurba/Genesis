@@ -1,5 +1,4 @@
 
-
 import {
   Card,
   CardContent,
@@ -14,6 +13,7 @@ import { formatCurrency } from "@/lib/utils"
 import { RightColumnTabs } from "@/components/right-column-tabs"
 import { BudgetStatus, type BudgetStatusData } from "@/components/budget-status"
 import { IncomeBreakdownChart, type CategoryData } from "@/components/income-breakdown-chart"
+import { AccountBalancesCard, type AccountData } from "@/components/account-balances-card"
 
 
 // Helper function to get start and end of a month
@@ -50,13 +50,27 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       redirect('/login');
   }
 
-  // --- Single, consolidated data fetch for all transaction-related data ---
-  const { data: allTransactions, error: allTransactionsError } = await supabase
-    .from('transactions')
-    .select('id, date, type, amount, description, categories ( id, name )') // Also fetch category ID
-    .eq('user_id', user.id)
-    .order('date', { ascending: false });
+  // --- Consolidated Data Fetching ---
+  const [accountsResult, transactionsResult] = await Promise.all([
+    supabase
+      .from('accounts')
+      .select('id, name, type')
+      .eq('user_id', user.id),
+    supabase
+      .from('transactions')
+      .select('id, date, type, amount, description, account_id, to_account_id, categories(id, name)')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false }),
+  ]);
 
+  const { data: accountsRaw, error: accountsError } = accountsResult;
+  const { data: allTransactions, error: allTransactionsError } = transactionsResult;
+
+  if (accountsError) {
+    console.error("Error fetching accounts:", accountsError);
+    return <div>Error loading account data.</div>;
+  }
+  
   if (allTransactionsError) {
     console.error("Error fetching transactions:", allTransactionsError);
     return <div>Error loading data. Please check the console for details.</div>
@@ -223,6 +237,38 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       .map(([category, total]) => ({ category, total }))
       .sort((a, b) => b.total - a.total);
 
+  // --- Calculate Account Balances for new card ---
+  const accountBalances = new Map<number, number>();
+  (accountsRaw || []).forEach(acc => {
+    accountBalances.set(acc.id, 0);
+  });
+
+  transactions.forEach(t => {
+      if (t.type === 'transfer') {
+          if (t.account_id) {
+              const fromBalance = accountBalances.get(t.account_id) || 0;
+              accountBalances.set(t.account_id, fromBalance - t.amount);
+          }
+          if (t.to_account_id) {
+              const toBalance = accountBalances.get(t.to_account_id) || 0;
+              accountBalances.set(t.to_account_id, toBalance + t.amount);
+          }
+      } else {
+          if (t.account_id) {
+              const currentBalance = accountBalances.get(t.account_id) || 0;
+              const adjustment = t.type === 'income' ? t.amount : -t.amount;
+              accountBalances.set(t.account_id, currentBalance + adjustment);
+          }
+      }
+  });
+  
+  const accountsWithBalances: AccountData[] = (accountsRaw || []).map(acc => ({
+    id: acc.id,
+    name: acc.name,
+    type: acc.type || 'Other',
+    balance: accountBalances.get(acc.id) || 0,
+  })).sort((a,b) => b.balance - a.balance);
+
 
   return (
     <div className="space-y-4">
@@ -354,13 +400,12 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       </div>
       
       {/* Fourth Row: New Analytics */}
-       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <BudgetStatus budgets={budgetsWithSpending} />
           <IncomeBreakdownChart incomeData={incomeByCategoryData} />
+          <AccountBalancesCard accounts={accountsWithBalances} />
        </div>
 
     </div>
   )
 }
-
-    
