@@ -45,15 +45,15 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
         
         {/* Left Panel: Form (takes 2/5 of the width on md screens) */}
         <div className="col-span-1 md:col-span-2">
-          <Card className="h-full w-full flex flex-col items-center justify-center rounded-none border-0 bg-white/30 text-card-foreground shadow-2xl backdrop-blur-sm">
-            <div className="w-full max-w-sm">
-              <CardHeader className="text-center">
-                <CardTitle className="text-3xl font-bold tracking-tight dark:text-slate-900">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
-                <CardDescription className="text-muted-foreground dark:text-slate-800">
+          <div className="h-full w-full flex flex-col items-center justify-center bg-black/30 shadow-2xl backdrop-blur-sm">
+            <div className="w-full max-w-sm p-6">
+              <CardHeader className="text-center p-0 mb-6">
+                <CardTitle className="text-3xl font-bold tracking-tight text-white">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
+                <CardDescription className="text-white/80">
                   {isSignUpView ? 'Enter your details to get started.' : 'Sign in to access your dashboard.'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-4">
+              <CardContent className="grid gap-4 p-0">
                  {searchParams.error && (
                   <Alert variant="destructive" className="bg-destructive/20 text-destructive-foreground border-destructive/50 [&>svg]:text-destructive-foreground">
                     <Terminal className="h-4 w-4" />
@@ -67,15 +67,15 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
                 <div className="mt-4 text-center text-sm">
                   {isSignUpView ? (
                     <>
-                      <span className="text-muted-foreground dark:text-slate-800">Already have an account? </span>
-                      <Link href="/login" className="underline text-primary hover:text-primary/80 font-semibold">
+                      <span className="text-white/80">Already have an account? </span>
+                      <Link href="/login" className="underline text-white hover:text-white/80 font-semibold">
                         Sign in
                       </Link>
                     </>
                   ) : (
                     <>
-                      <span className="text-muted-foreground dark:text-slate-800">Don&apos;t have an account? </span>
-                      <Link href="/login?view=signup" className="underline text-primary hover:text-primary/80 font-semibold">
+                      <span className="text-white/80">Don&apos;t have an account? </span>
+                      <Link href="/login?view=signup" className="underline text-white hover:text-white/80 font-semibold">
                         Sign up
                       </Link>
                     </>
@@ -83,7 +83,7 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
                 </div>
               </CardContent>
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* Right Panel: Brand (takes 3/5 of the width on md screens) */}

@@ -12,7 +12,7 @@ import { Terminal, LoaderCircle } from "lucide-react"
 function EmailSubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" variant="outline" className="w-full bg-white/40 text-slate-800 border border-white/50 hover:bg-white/60" aria-disabled={pending}>
+    <Button type="submit" variant="outline" className="w-full bg-black/20 text-white border border-white/30 hover:bg-black/30" aria-disabled={pending}>
       {pending ? "Signing in..." : "Sign In with Email"}
     </Button>
   )
@@ -21,7 +21,7 @@ function EmailSubmitButton() {
 function GoogleSubmitButton() {
     const { pending } = useFormStatus();
     return (
-        <Button variant="outline" type="submit" className="w-full bg-white/40 text-slate-800 border border-white/50 hover:bg-white/60" disabled={pending}>
+        <Button variant="outline" type="submit" className="w-full bg-black/20 text-white border border-white/30 hover:bg-black/30" disabled={pending}>
             {pending ? (
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -49,7 +49,7 @@ export function LoginForm() {
                 <span className="w-full border-t border-white/30" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-transparent px-2 text-muted-foreground dark:text-slate-800">
+                <span className="bg-transparent px-2 text-white/80">
                     Or continue with
                 </span>
             </div>
@@ -57,19 +57,19 @@ export function LoginForm() {
 
         <form action={formAction} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="email" className="text-muted-foreground dark:text-slate-800">Email</Label>
+                <Label htmlFor="email" className="text-white/80">Email</Label>
                 <Input
                 id="email"
                 name="email"
                 type="email"
                 placeholder="m@example.com"
                 required
-                className="bg-white/40 border-white/50 text-slate-900 placeholder:text-slate-500 focus:bg-white/60"
+                className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30"
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="password" className="text-muted-foreground dark:text-slate-800">Password</Label>
-                <Input id="password" name="password" type="password" required className="bg-white/40 border-white/50 text-slate-900 placeholder:text-slate-500 focus:bg-white/60" />
+                <Label htmlFor="password" className="text-white/80">Password</Label>
+                <Input id="password" name="password" type="password" required className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30" />
             </div>
             {state?.error && (
                 <Alert variant="destructive">
