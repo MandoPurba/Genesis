@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import * as React from 'react'
 import { MonitorSmartphone, LoaderCircle } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 export function MobileBlocker({ children }: { children: React.ReactNode }) {
-  const [isMounted, setIsMounted] = useState(false)
+  const [isMounted, setIsMounted] = React.useState(false)
   const isMobile = useIsMobile()
 
-  useEffect(() => {
+  React.useEffect(() => {
     setIsMounted(true)
   }, [])
 
