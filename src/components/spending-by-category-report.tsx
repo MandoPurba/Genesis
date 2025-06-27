@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Scatter, ScatterChart, CartesianGrid, XAxis, YAxis, ZAxis } from "recharts"
@@ -11,7 +12,6 @@ import {
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
 import { formatCurrency } from "@/lib/utils"
@@ -69,16 +69,18 @@ export function SpendingByCategoryReport({ data, period }: ReportProps) {
                 <ZAxis type="number" dataKey="total" range={[100, 1500]} name="Total" />
                 <ChartTooltip
                     cursor={{ strokeDasharray: '3 3' }}
-                    content={<ChartTooltipContent
-                        formatter={(_, name, props) => (
-                           <div className="flex flex-col items-start">
-                               <span className="font-bold">{props.payload.category}</span>
-                               <span>{formatCurrency(props.payload.total)}</span>
-                           </div>
-                        )}
-                        labelFormatter={() => ''}
-                        hideIndicator
-                    />}
+                    content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                                <div className="min-w-[8rem] rounded-lg border bg-background p-2 text-sm shadow-sm">
+                                    <p className="font-bold">{data.category}</p>
+                                    <p className="text-muted-foreground">{formatCurrency(data.total)}</p>
+                                </div>
+                            );
+                        }
+                        return null;
+                    }}
                 />
                 <Scatter name="Spending" data={data} fill="var(--color-total)" />
             </ScatterChart>
