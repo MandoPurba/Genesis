@@ -1,7 +1,8 @@
+
 "use client"
 
 import Link from "next/link"
-import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
   Card,
   CardContent,
@@ -55,11 +56,11 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
 
   if (!data || data.length === 0 || data.every(d => d.income === 0 && d.expense === 0)) {
     return (
-      <Card className="flex flex-col">
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Income vs Expenses</CardTitle>
-            <CardDescription>A visual representation of your cash flow this {range === 'monthly' ? 'month' : 'year'}.</CardDescription>
+            <CardTitle>Income vs. Expense Comparison</CardTitle>
+            <CardDescription>A visual comparison of your cash flow this {range === 'monthly' ? 'month' : 'year'}.</CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <Button variant={range === 'monthly' ? 'default' : 'ghost'} size="sm" asChild>
@@ -71,7 +72,7 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
           </div>
         </CardHeader>
         <CardContent className="flex items-center justify-center flex-1">
-          <div className="flex items-center justify-center w-full h-full text-center rounded-lg bg-muted/50 p-4 min-h-[200px]">
+          <div className="flex items-center justify-center w-full text-center rounded-lg bg-muted/50 p-4 min-h-[200px]">
             <p className="text-muted-foreground">No transaction data for this period to display the chart.</p>
           </div>
         </CardContent>
@@ -80,11 +81,11 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
   }
 
   return (
-    <Card className="flex flex-col">
+    <Card>
        <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Income vs Expenses</CardTitle>
-            <CardDescription>Your income and expense trend for this {range === 'monthly' ? 'month' : 'year'}.</CardDescription>
+            <CardTitle>Income vs. Expense Comparison</CardTitle>
+            <CardDescription>Your income and expense comparison for this {range === 'monthly' ? 'month' : 'year'}.</CardDescription>
           </div>
           <div className="flex items-center gap-2 p-1 bg-muted rounded-md">
             <Button variant={range === 'monthly' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
@@ -95,9 +96,9 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
             </Button>
           </div>
         </CardHeader>
-      <CardContent className="flex-1 pb-0 pl-2">
-        <ChartContainer config={chartConfig} className="h-full w-full">
-          <LineChart
+      <CardContent className="pb-0 pl-2">
+        <ChartContainer config={chartConfig} className="w-full" style={{ height: '300px' }}>
+          <BarChart
             accessibilityLayer
             data={data}
             margin={{
@@ -135,23 +136,19 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
                 />
               }
             />
-            <Line
+            <Bar
               dataKey="income"
-              type="monotone"
-              stroke="var(--color-income)"
-              strokeWidth={2}
-              dot={true}
+              fill="var(--color-income)"
+              radius={[4, 4, 0, 0]}
               name="Income"
             />
-            <Line
+            <Bar
               dataKey="expense"
-              type="monotone"
-              stroke="var(--color-expense)"
-              strokeWidth={2}
-              dot={true}
+              fill="var(--color-expense)"
+              radius={[4, 4, 0, 0]}
               name="Expense"
             />
-          </LineChart>
+          </BarChart>
         </ChartContainer>
       </CardContent>
     </Card>
