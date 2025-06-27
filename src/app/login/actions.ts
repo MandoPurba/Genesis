@@ -45,3 +45,27 @@ export async function signup(prevState: any, formData: FormData) {
 
   return { message: "Check your email to continue the sign-up process." }
 }
+
+
+export async function loginWithGoogle() {
+  const origin = headers().get("origin")
+  const supabase = createClient()
+
+  if (!supabase) {
+    return redirect('/login?error=Supabase client not available.')
+  }
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    console.error('Google login error:', error)
+    return redirect('/login?error=Could not authenticate with Google.')
+  }
+
+  return redirect(data.url)
+}
