@@ -186,7 +186,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   }
 
   // --- Data for Right Column ---
-  const recentTransactions = transactions.slice(0, 5);
+  const recentTransactions = transactions.slice(0, 4);
 
   const categoryExpenses = currentMonthTransactions
     .filter(t => t.type === 'expense')
@@ -395,6 +395,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <RightColumnTabs 
               categoryData={categoryExpenseData} 
               transactions={recentTransactions}
+              totalTransactions={transactions.length}
             />
         </div>
       </div>

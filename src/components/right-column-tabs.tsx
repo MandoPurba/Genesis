@@ -20,9 +20,10 @@ type Transaction = {
 type RightColumnTabsProps = {
     categoryData: Omit<CategoryExpenseData, 'fill'>[];
     transactions: Transaction[];
+    totalTransactions: number;
 }
 
-export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsProps) {
+export function RightColumnTabs({ categoryData, transactions, totalTransactions }: RightColumnTabsProps) {
     return (
         <Card className="flex flex-col h-full">
             <Tabs defaultValue="categories" className="flex flex-col flex-1">
@@ -36,7 +37,7 @@ export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsP
                     <CategoryChart data={categoryData} />
                 </TabsContent>
                 <TabsContent value="recent" className="flex-1">
-                    <RecentTransactions transactions={transactions} />
+                    <RecentTransactions transactions={transactions} totalTransactions={totalTransactions} />
                 </TabsContent>
             </Tabs>
         </Card>
