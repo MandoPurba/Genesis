@@ -25,7 +25,7 @@ type ReportProps = {
   period: 'this_year' | 'last_year';
 }
 
-export function SpendingByCategoryReport({ data }: ReportProps) {
+export function SpendingByCategoryReport({ data, period }: ReportProps) {
   
   const chartHeight = Math.max(300, data.length * 40);
 
