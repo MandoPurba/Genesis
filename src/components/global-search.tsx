@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -22,7 +21,6 @@ import {
   LoaderCircle,
   LayoutList,
   PieChart,
-  Repeat,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { formatCurrency, IconForCategory } from "@/lib/utils"
@@ -44,7 +42,6 @@ const navLinks = [
   { href: "/accounts", label: "Accounts", icon: Landmark },
   { href: "/categories", label: "Categories", icon: LayoutList },
   { href: "/reports", label: "Reports", icon: PieChart },
-  { href: "/recurring", label: "Recurring", icon: Repeat },
 ]
 
 export function GlobalSearch() {
