@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -12,23 +13,45 @@ import {
 import {
   ChartContainer,
   ChartTooltip as ChartTooltipWrapper,
-  ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 
 const chartConfig = {
-  netWorth: {
-    label: "Net Worth",
-    color: "hsl(var(--chart-1))",
-  },
+  netWorth: { label: "Net Worth" },
+  up: { label: "Increase", color: "hsl(var(--success))" },
+  down: { label: "Decrease", color: "hsl(var(--destructive))" },
+  stable: { label: "Stable", color: "hsl(var(--chart-1))" },
 } satisfies ChartConfig
 
 type NetWorthReportChartProps = {
-  data: { date: string; netWorth: number }[];
+  data: { date: string; netWorth: number; up?: number | null, down?: number | null, stable?: number | null }[];
   range: '1y' | '5y' | 'all';
 }
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload; // Main data object for the point
+      return (
+        <div className="grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+          <div className="font-medium">
+            {new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+          <div className="flex w-full flex-wrap items-stretch gap-2">
+            <div className="flex flex-1 justify-between leading-none">
+              <span>Net Worth</span>
+              <span className="font-mono font-medium tabular-nums text-foreground ml-4">
+                {formatCurrency(data.netWorth)}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+};
+
 
 export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
 
@@ -58,13 +81,13 @@ export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
           </div>
           <div className="flex items-center gap-2 p-1 bg-muted rounded-md">
             <Button variant={range === '1y' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
-              <Link href="/reports?range=1y">Last Year</Link>
+              <Link href="/reports?range=1y" scroll={false}>Last Year</Link>
             </Button>
             <Button variant={range === '5y' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
-              <Link href="/reports?range=5y">5 Years</Link>
+              <Link href="/reports?range=5y" scroll={false}>5 Years</Link>
             </Button>
             <Button variant={range === 'all' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
-              <Link href="/reports?range=all">All Time</Link>
+              <Link href="/reports?range=all" scroll={false}>All Time</Link>
             </Button>
           </div>
         </CardHeader>
@@ -82,9 +105,17 @@ export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
                     }}
                 >
                     <defs>
-                        <linearGradient id="colorNetWorth" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="var(--color-netWorth)" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="var(--color-netWorth)" stopOpacity={0}/>
+                        <linearGradient id="colorUp" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-up)" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="var(--color-up)" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorDown" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-down)" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="var(--color-down)" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorStable" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-stable)" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="var(--color-stable)" stopOpacity={0}/>
                         </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} />
@@ -105,29 +136,11 @@ export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
                     />
                     <ChartTooltipWrapper
                         cursor={true}
-                        content={
-                            <ChartTooltipContent
-                                labelFormatter={(label) => new Date(label).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                                formatter={(value, name) => (
-                                    <div className="flex items-center justify-between w-full min-w-[120px]">
-                                        <span>Net Worth</span>
-                                        <span className="ml-4 font-semibold">{formatCurrency(Number(value))}</span>
-                                    </div>
-                                )}
-                                itemStyle={{width: '100%'}}
-                            />
-                        }
+                        content={<CustomTooltip />}
                     />
-                    <Area
-                        dataKey="netWorth"
-                        type="monotone"
-                        stroke="var(--color-netWorth)"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#colorNetWorth)"
-                        name="Net Worth"
-                        dot={false}
-                    />
+                    <Area dataKey="up" type="monotone" stroke="var(--color-up)" strokeWidth={2} fillOpacity={1} fill="url(#colorUp)" dot={false} connectNulls={false}/>
+                    <Area dataKey="down" type="monotone" stroke="var(--color-down)" strokeWidth={2} fillOpacity={1} fill="url(#colorDown)" dot={false} connectNulls={false}/>
+                    <Area dataKey="stable" type="monotone" stroke="var(--color-stable)" strokeWidth={2} fillOpacity={1} fill="url(#colorStable)" dot={false} connectNulls={false}/>
                 </AreaChart>
             </ChartContainer>
          ) : (

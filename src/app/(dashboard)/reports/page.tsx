@@ -46,21 +46,66 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         } else if (t.type === 'expense') {
             cumulativeNetWorth -= t.amount;
         }
-        return { date: t.date, netWorth: cumulativeNetWorth };
+        return { date: new Date(t.date), netWorth: cumulativeNetWorth };
     });
+
+    // Get a single point for the end of each month
+    const monthlyNetWorthMap = new Map<string, { date: Date, netWorth: number }>();
+    if(netWorthDataFull.length > 0) {
+        netWorthDataFull.forEach(point => {
+            const monthKey = `${point.date.getUTCFullYear()}-${String(point.date.getUTCMonth() + 1).padStart(2, '0')}`;
+            monthlyNetWorthMap.set(monthKey, point); // Overwrites until we have the last value for each month
+        });
+    }
+    const monthlyPoints = Array.from(monthlyNetWorthMap.values()).sort((a,b) => a.date.getTime() - b.date.getTime());
+
 
     const validRanges = ['1y', '5y', 'all'] as const;
     type Range = typeof validRanges[number];
     const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '5y';
     
-    let netWorthDataFiltered = netWorthDataFull;
+    // Filter monthly points by range
     const today = new Date();
+    let filteredMonthlyPoints = monthlyPoints;
     if (range === '1y') {
-        const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-        netWorthDataFiltered = netWorthDataFull.filter(d => new Date(d.date) >= oneYearAgo);
+        const oneYearAgo = new Date(today);
+        oneYearAgo.setFullYear(today.getFullYear() - 1);
+        filteredMonthlyPoints = monthlyPoints.filter(d => d.date >= oneYearAgo);
     } else if (range === '5y') {
-        const fiveYearsAgo = new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
-        netWorthDataFiltered = netWorthDataFull.filter(d => new Date(d.date) >= fiveYearsAgo);
+        const fiveYearsAgo = new Date(today);
+        fiveYearsAgo.setFullYear(today.getFullYear() - 5);
+        filteredMonthlyPoints = monthlyPoints.filter(d => d.date >= fiveYearsAgo);
+    }
+    
+    // Prepare segmented data for the chart
+    const netWorthDataForChart = filteredMonthlyPoints.map(point => ({
+        date: point.date.toISOString(),
+        netWorth: point.netWorth,
+        up: null as number | null,
+        down: null as number | null,
+        stable: null as number | null,
+    }));
+
+    if (netWorthDataForChart.length > 0) {
+        if (netWorthDataForChart.length === 1) {
+            netWorthDataForChart[0].stable = netWorthDataForChart[0].netWorth;
+        } else {
+            for (let i = 1; i < netWorthDataForChart.length; i++) {
+                const current = netWorthDataForChart[i];
+                const prev = netWorthDataForChart[i-1];
+                
+                if (current.netWorth > prev.netWorth) {
+                    current.up = current.netWorth;
+                    prev.up = prev.netWorth;
+                } else if (current.netWorth < prev.netWorth) {
+                    current.down = current.netWorth;
+                    prev.down = prev.netWorth;
+                } else {
+                    current.stable = current.netWorth;
+                    prev.stable = prev.netWorth;
+                }
+            }
+        }
     }
     
     // --- 2. & 3. Calculations for new reports ---
@@ -122,7 +167,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-                <NetWorthReportChart data={netWorthDataFiltered} range={range} />
+                <NetWorthReportChart data={netWorthDataForChart} range={range} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
