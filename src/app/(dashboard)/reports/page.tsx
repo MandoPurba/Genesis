@@ -76,7 +76,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
             date: new Date(`${monthKey}-01T12:00:00Z`).toISOString(), // Use a consistent time for sorting
             netWorth: data,
         };
-    }).sort((a, b) => new Date(a.date).getTime() - b.date.getTime());
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const validRanges = ['1y', '5y', 'all'] as const;
     type Range = typeof validRanges[number];
