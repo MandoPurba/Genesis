@@ -7,6 +7,9 @@ import {
   ArrowRightLeft,
   Target,
   Landmark,
+  LayoutList,
+  PieChart,
+  Repeat,
 } from "lucide-react"
 import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "./ui/sidebar"
 
@@ -15,6 +18,9 @@ const links = [
   { href: "/transactions", label: "Transactions", icon: ArrowRightLeft },
   { href: "/budgets", label: "Budgets", icon: Target },
   { href: "/accounts", label: "Accounts", icon: Landmark },
+  { href: "/categories", label: "Categories", icon: LayoutList },
+  { href: "/reports", label: "Reports", icon: PieChart },
+  { href: "/recurring", label: "Recurring", icon: Repeat },
 ]
 
 export function MainNav() {
