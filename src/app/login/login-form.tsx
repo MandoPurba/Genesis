@@ -5,7 +5,6 @@ import { useFormStatus } from "react-dom"
 import { login, loginWithGoogle } from "./actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal, LoaderCircle } from "lucide-react"
 
@@ -56,21 +55,22 @@ export function LoginForm() {
         </div>
 
         <form action={formAction} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="email" className="text-white/80">Email</Label>
-                <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30"
-                />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="password" className="text-white/80">Password</Label>
-                <Input id="password" name="password" type="password" required className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30" />
-            </div>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Email"
+              required
+              className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30"
+            />
+            <Input 
+              id="password" 
+              name="password" 
+              type="password" 
+              placeholder="Password"
+              required 
+              className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30" 
+            />
             {state?.error && (
                 <Alert variant="destructive">
                 <Terminal className="h-4 w-4" />
