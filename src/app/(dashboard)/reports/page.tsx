@@ -61,7 +61,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
 
     const validRanges = ['1y', '5y', 'all'] as const;
     type Range = typeof validRanges[number];
-    const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '5y';
+    const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '1y';
     
     let filteredMonthlyFlows = monthlyFlows;
     if (range === '1y') {
@@ -85,7 +85,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     // Data for Income vs Expense Report
-    const period: Period = validPeriods.includes(searchParams.period as any) ? searchParams.period as Period : 'this_year';
+    const periodParam = searchParams.period as any;
+    const period: Period = validPeriods.includes(periodParam) ? periodParam : 'this_year';
     const targetYear = period === 'last_year' ? today.getFullYear() - 1 : today.getFullYear();
     const yearRange = getYearDateRange(targetYear);
 
@@ -108,7 +109,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     const incomeExpenseData = Array.from(monthlyDataMap.entries()).map(([month, totals]) => ({ month, ...totals }));
 
     // Data for Spending by Category Trend Report
-    const spendingPeriod: Period = validPeriods.includes(searchParams.spendingPeriod as any) ? searchParams.spendingPeriod as Period : 'this_year';
+    const spendingPeriodParam = searchParams.spendingPeriod as any;
+    const spendingPeriod: Period = validPeriods.includes(spendingPeriodParam) ? spendingPeriodParam : 'this_year';
     const targetSpendingYear = spendingPeriod === 'last_year' ? today.getFullYear() - 1 : today.getFullYear();
     const spendingYearRange = getYearDateRange(targetSpendingYear);
 
