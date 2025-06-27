@@ -1,6 +1,6 @@
 "use client"
 
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
   Card,
   CardContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card"
 import {
   ChartContainer,
+  ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
