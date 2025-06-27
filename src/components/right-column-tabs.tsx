@@ -1,4 +1,3 @@
-
 "use client"
 
 import { Card } from "@/components/ui/card";
@@ -28,7 +27,7 @@ export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsP
             <Tabs defaultValue="categories" className="flex flex-col">
                 <div className="p-4">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="categories">Categories</TabsTrigger>
+                        <TabsTrigger value="categories">Expense Categories</TabsTrigger>
                         <TabsTrigger value="recent">Recent</TabsTrigger>
                     </TabsList>
                 </div>

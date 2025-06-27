@@ -4,11 +4,7 @@ import * as React from "react"
 import { Pie, PieChart, Cell } from "recharts"
 
 import {
-  Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card"
 import {
   ChartContainer,
@@ -55,11 +51,7 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
   if (!chartData || chartData.length === 0) {
     return (
         <div className="flex flex-col">
-            <CardHeader>
-              <CardTitle>Expenses by Category</CardTitle>
-              <CardDescription>Your spending distribution this month.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center flex-1">
+            <CardContent className="flex items-center justify-center flex-1 pt-6">
               <div className="flex items-center justify-center w-full text-center rounded-lg bg-muted/50 p-4 min-h-[200px]">
                 <p className="text-sm text-muted-foreground">No expense data for this month.</p>
               </div>
@@ -70,11 +62,7 @@ export function CategoryChart({ data }: { data: Omit<CategoryExpenseData, 'fill'
 
   return (
     <div className="flex flex-col">
-      <CardHeader className="items-center pb-0">
-        <CardTitle>Expenses by Category</CardTitle>
-        <CardDescription>Your spending distribution this month.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1 pb-0">
+      <CardContent className="flex-1 pt-6 pb-0">
         <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-square max-h-96"
