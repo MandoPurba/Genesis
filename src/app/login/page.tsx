@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -44,7 +45,7 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
         
         {/* Left Panel: Form (takes 2/5 of the width on md screens) */}
         <div className="col-span-1 md:col-span-2 flex items-center justify-center">
-          <div className="h-full w-full flex flex-col items-center justify-center bg-black/60 shadow-2xl backdrop-blur-sm">
+          <div className="h-full w-full flex flex-col items-center justify-center bg-transparent shadow-2xl backdrop-blur-sm">
             <div className="w-full max-w-sm p-6">
               <CardHeader className="text-center p-0 mb-6">
                 <CardTitle className="text-3xl font-bold tracking-tight text-white">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
