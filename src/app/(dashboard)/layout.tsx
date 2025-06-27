@@ -105,7 +105,7 @@ export default async function DashboardLayout({
                   </SidebarFooter>
                 </Sidebar>
 
-                <main className="overflow-hidden">
+                <main className="overflow-hidden flex">
                   {children}
                 </main>
             </div>

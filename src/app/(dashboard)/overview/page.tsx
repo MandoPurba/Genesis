@@ -183,7 +183,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       .sort((a, b) => b.total - a.total);
 
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex flex-col flex-1 gap-4">
       {/* Top Row: Stat Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Income */}
