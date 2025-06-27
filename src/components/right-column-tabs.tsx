@@ -1,7 +1,7 @@
 
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CategoryChart, type CategoryExpenseData } from "./category-chart";
 import { RecentTransactions } from "./recent-transactions";
@@ -20,9 +20,10 @@ type Transaction = {
 type RightColumnTabsProps = {
     categoryData: Omit<CategoryExpenseData, 'fill'>[];
     transactions: Transaction[];
+    hasMoreTransactions: boolean;
 }
 
-export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsProps) {
+export function RightColumnTabs({ categoryData, transactions, hasMoreTransactions }: RightColumnTabsProps) {
     return (
         <Card className="flex flex-col h-full">
             <Tabs defaultValue="categories" className="flex flex-col h-full">
@@ -35,8 +36,8 @@ export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsP
                 <TabsContent value="categories" className="flex-1 overflow-y-auto min-h-0">
                     <CategoryChart data={categoryData} />
                 </TabsContent>
-                <TabsContent value="recent" className="flex-1 overflow-y-auto min-h-0 p-6 pt-0">
-                    <RecentTransactions transactions={transactions} />
+                <TabsContent value="recent" className="p-6 pt-0">
+                    <RecentTransactions transactions={transactions} hasMore={hasMoreTransactions} />
                 </TabsContent>
             </Tabs>
         </Card>

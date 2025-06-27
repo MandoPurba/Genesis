@@ -1,7 +1,10 @@
 
 "use client"
 
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 import { formatCurrency, IconForCategory } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 type Transaction = {
     id: number;
@@ -14,9 +17,9 @@ type Transaction = {
     } | null;
 }
 
-export function RecentTransactions({ transactions }: { transactions: Transaction[] }) {
+export function RecentTransactions({ transactions, hasMore }: { transactions: Transaction[], hasMore: boolean }) {
     return (
-        <div className="flex flex-col h-full">
+        <div>
             {transactions.length > 0 ? (
                 <div className="space-y-6">
                     {transactions.map((transaction) => (
@@ -50,9 +53,19 @@ export function RecentTransactions({ transactions }: { transactions: Transaction
                             </div>
                         </div>
                     ))}
+                    {hasMore && (
+                        <div className="pt-2 text-center">
+                            <Button asChild variant="link" className="text-sm text-muted-foreground">
+                                <Link href="/transactions">
+                                    View More
+                                    <ArrowRight className="ml-1 h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </div>
+                    )}
                 </div>
             ) : (
-                <div className="flex flex-1 flex-col items-center justify-center h-full text-center rounded-lg bg-muted/50 p-4">
+                <div className="flex flex-col items-center justify-center h-full text-center rounded-lg bg-muted/50 p-4">
                     <p className="text-sm text-muted-foreground">No recent transactions found.</p>
                     <p className="text-xs text-muted-foreground mt-1">When you add transactions, they will appear here.</p>
                 </div>

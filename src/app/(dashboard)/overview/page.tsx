@@ -168,7 +168,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   }
 
   // --- Data for Right Column ---
-  const recentTransactions = transactions.slice(0, 50);
+  const recentTransactions = transactions.slice(0, 7);
 
   const categoryExpenses = currentMonthTransactions
     .filter(t => t.type === 'expense')
@@ -183,7 +183,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       .sort((a, b) => b.total - a.total);
 
   return (
-    <div className="flex flex-col flex-1 gap-4">
+    <div className="flex-1 flex flex-col gap-4">
       {/* Top Row: Stat Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Income */}
@@ -251,6 +251,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <RightColumnTabs 
               categoryData={categoryExpenseData} 
               transactions={recentTransactions}
+              hasMoreTransactions={transactions.length > 7}
             />
         </div>
       </div>
