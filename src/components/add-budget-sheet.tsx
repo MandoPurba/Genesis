@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useActionState, useEffect, useState } from "react"
@@ -19,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 // Updated type to match schema (bigint -> number)
 type Category = { id: number; name: string; }
@@ -34,6 +36,7 @@ function SubmitButton() {
 
 export function AddBudgetSheet({ categories }: { categories: Category[] }) {
   const { toast } = useToast()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addBudget, null)
 
@@ -43,6 +46,7 @@ export function AddBudgetSheet({ categories }: { categories: Category[] }) {
   useEffect(() => {
     if (state?.success) {
       toast({ title: "Success!", description: state.success })
+      router.refresh()
       setOpen(false)
       // Reset form state by changing key
       setAmountValue('')
@@ -50,7 +54,7 @@ export function AddBudgetSheet({ categories }: { categories: Category[] }) {
     } else if (state?.error) {
       toast({ title: "Error", description: state.error, variant: "destructive" })
     }
-  }, [state, toast])
+  }, [state, toast, router])
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');

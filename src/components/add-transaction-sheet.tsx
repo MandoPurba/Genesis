@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { PlusCircle, AlertCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 type Category = { id: number; name: string; type: 'income' | 'expense' }
 type Account = { id: number; name: string; balance: number; }
@@ -40,6 +41,7 @@ function SubmitButton({ disabled }: { disabled?: boolean }) {
 
 export function AddTransactionSheet({ categories, accounts, budgetInfo }: { categories: Category[]; accounts: Account[]; budgetInfo: BudgetInfo }) {
   const { toast } = useToast()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addTransaction, null)
 
@@ -63,6 +65,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
   useEffect(() => {
     if (state?.success) {
       toast({ title: "Success!", description: state.success })
+      router.refresh()
       setOpen(false)
       // Reset form state by changing key
       setDate(new Date())
@@ -78,7 +81,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
     } else if (state?.error) {
       toast({ title: "Error", description: state.error, variant: "destructive" })
     }
-  }, [state, toast])
+  }, [state, toast, router])
 
   useEffect(() => {
     // Reset selected category/accounts when type changes

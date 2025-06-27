@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useActionState, useEffect, useState } from "react"
@@ -18,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { PlusCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -32,6 +34,7 @@ const accountTypes = ['Bank Account', 'Cash', 'E-Wallet', 'Other'];
 
 export function AddAccountSheet() {
   const { toast } = useToast()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [state, formAction] = useActionState(addAccount, null)
   const [key, setKey] = useState(Date.now());
@@ -39,12 +42,13 @@ export function AddAccountSheet() {
   useEffect(() => {
     if (state?.success) {
       toast({ title: "Success!", description: state.success })
+      router.refresh()
       setOpen(false)
       setKey(Date.now())
     } else if (state?.error) {
       toast({ title: "Error", description: state.error, variant: "destructive" })
     }
-  }, [state, toast])
+  }, [state, toast, router])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
