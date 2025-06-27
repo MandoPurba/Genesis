@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AddCategorySheet } from "@/components/add-category-sheet";
@@ -64,18 +63,16 @@ export default async function CategoriesPage() {
             <AddCategorySheet />
         </CardHeader>
         <CardContent>
-            <Tabs defaultValue="expense" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="expense">Expense Categories</TabsTrigger>
-                    <TabsTrigger value="income">Income Categories</TabsTrigger>
-                </TabsList>
-                <TabsContent value="expense" className="mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                    <h3 className="text-xl font-semibold">Expense Categories</h3>
                     <CategoryList title="Expense" categories={expenseCategories} usedCategoryIds={usedCategoryIds} />
-                </TabsContent>
-                <TabsContent value="income" className="mt-4">
+                </div>
+                <div className="space-y-4">
+                    <h3 className="text-xl font-semibold">Income Categories</h3>
                     <CategoryList title="Income" categories={incomeCategories} usedCategoryIds={usedCategoryIds} />
-                </TabsContent>
-            </Tabs>
+                </div>
+            </div>
         </CardContent>
     </Card>
   )
