@@ -14,7 +14,7 @@ const getYearDateRange = (year: number) => {
     };
 };
 
-export default async function ReportsPage({ searchParams }: { searchParams: { range?: string, period?: string } }) {
+export default async function ReportsPage({ searchParams }: { searchParams: { range?: string, period?: string, spendingPeriod?: string } }) {
     const supabase = createClient();
     if (!supabase) {
         return <div>Supabase not configured.</div>;
@@ -37,6 +37,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         return <div>Error loading report data.</div>
     }
     const transactions = allTransactions || [];
+    const today = new Date();
 
     // --- 1. Net Worth Trend Calculations ---
     let cumulativeNetWorth = 0;
@@ -49,17 +50,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         return { date: new Date(t.date), netWorth: cumulativeNetWorth };
     });
 
-    // Get a single point for the end of each month
     const monthlyNetWorthMap = new Map<string, { date: Date, netWorth: number }>();
     if(netWorthDataFull.length > 0) {
         netWorthDataFull.forEach(point => {
             const monthKey = `${point.date.getUTCFullYear()}-${String(point.date.getUTCMonth() + 1).padStart(2, '0')}`;
-            monthlyNetWorthMap.set(monthKey, point); // Overwrites until we have the last value for each month
+            monthlyNetWorthMap.set(monthKey, point);
         });
     }
     const monthlyPoints = Array.from(monthlyNetWorthMap.values()).sort((a,b) => a.date.getTime() - b.date.getTime());
     
-    // Initialize data structure for the chart with trend properties
     const monthlyPointsWithTrend = monthlyPoints.map(point => ({
         date: point.date,
         netWorth: point.netWorth,
@@ -68,27 +67,23 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         stable: null as number | null,
     }));
 
-    // Calculate trend colors across the entire dataset
     if (monthlyPointsWithTrend.length > 1) {
         for (let i = 1; i < monthlyPointsWithTrend.length; i++) {
             const prev = monthlyPointsWithTrend[i-1];
             const current = monthlyPointsWithTrend[i];
 
-            // Set values on both prev and current to create continuous colored segments
             if (current.netWorth > prev.netWorth) {
                 prev.up = prev.netWorth;
                 current.up = current.netWorth;
             } else if (current.netWorth < prev.netWorth) {
                 prev.down = prev.netWorth;
                 current.down = current.netWorth;
-            } else { // Stable
-                // Set values on both points for a continuous segment
+            } else { 
                 prev.stable = prev.netWorth;
                 current.stable = current.netWorth;
             }
         }
     } else if (monthlyPointsWithTrend.length === 1) {
-        // A single point is considered stable
         monthlyPointsWithTrend[0].stable = monthlyPointsWithTrend[0].netWorth;
     }
 
@@ -96,8 +91,6 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     type Range = typeof validRanges[number];
     const range: Range = validRanges.includes(searchParams.range as any) ? searchParams.range as Range : '5y';
     
-    // Filter the trend-calculated data based on the selected range
-    const today = new Date();
     let filteredMonthlyPoints = monthlyPointsWithTrend;
     if (range === '1y') {
         const oneYearAgo = new Date(today);
@@ -124,8 +117,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     // --- 2. & 3. Calculations for other reports ---
     const validPeriods = ['this_year', 'last_year'] as const;
     type Period = typeof validPeriods[number];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Data for Income vs Expense Report
     const period: Period = validPeriods.includes(searchParams.period as any) ? searchParams.period as Period : 'this_year';
-    
     const targetYear = period === 'last_year' ? today.getFullYear() - 1 : today.getFullYear();
     const yearRange = getYearDateRange(targetYear);
 
@@ -134,9 +129,6 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         return tDate.toISOString() >= yearRange.start && tDate.toISOString() <= yearRange.end;
     });
 
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-    // Income vs Expense Data
     const monthlyDataMap = new Map<string, { income: number; expense: number }>();
     monthNames.forEach(name => monthlyDataMap.set(name, { income: 0, expense: 0 }));
 
@@ -150,13 +142,21 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     });
     const incomeExpenseData = Array.from(monthlyDataMap.entries()).map(([month, totals]) => ({ month, ...totals }));
 
-    // Spending by Category Trend Data
+    // Data for Spending by Category Trend Report
+    const spendingPeriod: Period = validPeriods.includes(searchParams.spendingPeriod as any) ? searchParams.spendingPeriod as Period : 'this_year';
+    const targetSpendingYear = spendingPeriod === 'last_year' ? today.getFullYear() - 1 : today.getFullYear();
+    const spendingYearRange = getYearDateRange(targetSpendingYear);
+
+    const spendingPeriodTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate.toISOString() >= spendingYearRange.start && tDate.toISOString() <= spendingYearRange.end;
+    });
+    
     const categoryMonthlySpending: { [month: string]: { [category: string]: number } } = {};
     monthNames.forEach(m => categoryMonthlySpending[m] = {});
 
     const allCategoryNames = new Set<string>();
-
-    periodTransactions.forEach(t => {
+    spendingPeriodTransactions.forEach(t => {
         if (t.type === 'expense') {
             const monthName = monthNames[new Date(t.date).getUTCMonth()];
             const categoryName = t.categories?.name || 'Uncategorized';
@@ -174,21 +174,22 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
         });
         return monthData;
     });
-
     const categoryListForChart = Array.from(allCategoryNames);
 
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-                <NetWorthReportChart data={netWorthDataForChart} range={range} period={period} />
+                <NetWorthReportChart data={netWorthDataForChart} range={range} period={period} spendingPeriod={spendingPeriod} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <IncomeVsExpenseReport data={incomeExpenseData} period={period} range={range} />
+                <IncomeVsExpenseReport data={incomeExpenseData} period={period} range={range} spendingPeriod={spendingPeriod} />
                 <SpendingByCategoryReport 
                     data={spendingByCategoryTrendData} 
                     categories={categoryListForChart}
-                    period={period} 
+                    spendingPeriod={spendingPeriod}
+                    period={period}
+                    range={range}
                 />
             </div>
         </div>

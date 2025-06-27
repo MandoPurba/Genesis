@@ -2,6 +2,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Legend } from "recharts"
 import {
   Card,
@@ -16,6 +17,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
 
 const CHART_COLORS = [
@@ -29,10 +31,12 @@ const CHART_COLORS = [
 type ReportProps = {
   data: { month: string; [category: string]: number | string }[];
   categories: string[];
+  spendingPeriod: 'this_year' | 'last_year';
   period: 'this_year' | 'last_year';
+  range: '1y' | '5y' | 'all';
 }
 
-export function SpendingByCategoryReport({ data, categories, period }: ReportProps) {
+export function SpendingByCategoryReport({ data, categories, spendingPeriod, period, range }: ReportProps) {
   const chartConfig = React.useMemo(() => {
     const config: ChartConfig = {};
     categories.forEach((category, index) => {
@@ -59,8 +63,20 @@ export function SpendingByCategoryReport({ data, categories, period }: ReportPro
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle>Spending Category Trends</CardTitle>
-        <CardDescription>Monthly spending composition for {period === 'this_year' ? 'this year' : 'last year'}.</CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle>Spending Category Trends</CardTitle>
+            <CardDescription>Monthly spending composition for {spendingPeriod === 'this_year' ? 'this year' : 'last year'}.</CardDescription>
+          </div>
+          <div className="flex items-center gap-2 pt-2 sm:pt-0">
+            <Button variant={spendingPeriod === 'this_year' ? 'secondary' : 'ghost'} size="sm" asChild>
+              <Link href={`/reports?spendingPeriod=this_year&period=${period}&range=${range}`} scroll={false}>This Year</Link>
+            </Button>
+            <Button variant={spendingPeriod === 'last_year' ? 'secondary' : 'ghost'} size="sm" asChild>
+              <Link href={`/reports?spendingPeriod=last_year&period=${period}&range=${range}`} scroll={false}>Last Year</Link>
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="pl-2 flex-1">
         {hasData ? (

@@ -28,9 +28,10 @@ type ReportProps = {
   data: { month: string; income: number; expense: number }[];
   period: 'this_year' | 'last_year';
   range: '1y' | '5y' | 'all';
+  spendingPeriod: 'this_year' | 'last_year';
 }
 
-export function IncomeVsExpenseReport({ data, period, range }: ReportProps) {
+export function IncomeVsExpenseReport({ data, period, range, spendingPeriod }: ReportProps) {
 
   const formatYAxisTick = (tick: number) => {
     if (Math.abs(tick) >= 1000000) return `Rp${(tick / 1000000).toFixed(0)}M`
@@ -48,10 +49,10 @@ export function IncomeVsExpenseReport({ data, period, range }: ReportProps) {
             </div>
             <div className="flex items-center gap-2 pt-2 sm:pt-0">
                 <Button variant={period === 'this_year' ? 'secondary' : 'ghost'} size="sm" asChild>
-                <Link href={`/reports?period=this_year&range=${range}`} scroll={false}>This Year</Link>
+                <Link href={`/reports?period=this_year&range=${range}&spendingPeriod=${spendingPeriod}`} scroll={false}>This Year</Link>
                 </Button>
                 <Button variant={period === 'last_year' ? 'secondary' : 'ghost'} size="sm" asChild>
-                <Link href={`/reports?period=last_year&range=${range}`} scroll={false}>Last Year</Link>
+                <Link href={`/reports?period=last_year&range=${range}&spendingPeriod=${spendingPeriod}`} scroll={false}>Last Year</Link>
                 </Button>
             </div>
         </div>
