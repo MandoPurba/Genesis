@@ -39,18 +39,17 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('https://plus.unsplash.com/premium_photo-1701791988754-d200cc1b78c7?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}
       />
-      <div className="absolute inset-0 bg-black/50" />
-
+      
       {/* Layout Grid */}
       <div className="relative z-10 grid min-h-screen grid-cols-1 md:grid-cols-5">
         
         {/* Left Panel: Form (takes 2/5 of the width on md screens) */}
         <div className="col-span-1 flex flex-col items-center justify-center p-8 md:col-span-2">
           <div className="w-full max-w-sm">
-            <Card className="border-white/10 bg-black/40 text-white shadow-2xl backdrop-blur-lg">
+            <Card className="border-gray-200/20 bg-white/30 text-card-foreground shadow-2xl backdrop-blur-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-3xl font-bold tracking-tight">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
-                <CardDescription className="text-gray-300">
+                <CardDescription className="text-muted-foreground">
                   {isSignUpView ? 'Enter your details to get started.' : 'Sign in to access your dashboard.'}
                 </CardDescription>
               </CardHeader>
@@ -68,15 +67,15 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
                 <div className="mt-4 text-center text-sm">
                   {isSignUpView ? (
                     <>
-                      <span className="text-gray-300">Already have an account? </span>
-                      <Link href="/login" className="underline text-primary-foreground hover:text-white font-semibold">
+                      <span className="text-muted-foreground">Already have an account? </span>
+                      <Link href="/login" className="underline text-primary hover:text-primary/80 font-semibold">
                         Sign in
                       </Link>
                     </>
                   ) : (
                     <>
-                      <span className="text-gray-300">Don&apos;t have an account? </span>
-                      <Link href="/login?view=signup" className="underline text-primary-foreground hover:text-white font-semibold">
+                      <span className="text-muted-foreground">Don&apos;t have an account? </span>
+                      <Link href="/login?view=signup" className="underline text-primary hover:text-primary/80 font-semibold">
                         Sign up
                       </Link>
                     </>

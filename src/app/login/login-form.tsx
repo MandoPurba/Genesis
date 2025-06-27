@@ -21,7 +21,7 @@ function EmailSubmitButton() {
 function GoogleSubmitButton() {
     const { pending } = useFormStatus();
     return (
-        <Button variant="outline" type="submit" className="w-full bg-white/10 hover:bg-white/20 text-white border-white/20" disabled={pending}>
+        <Button variant="outline" type="submit" className="w-full" disabled={pending}>
             {pending ? (
                 <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -46,10 +46,10 @@ export function LoginForm() {
 
         <div className="relative">
             <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-white/20" />
+                <span className="w-full border-t border-muted-foreground/20" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-gray-900/40 px-2 text-gray-300">
+                <span className="bg-background/80 px-2 text-muted-foreground">
                     Or continue with
                 </span>
             </div>
@@ -57,19 +57,18 @@ export function LoginForm() {
 
         <form action={formAction} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-300">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                 id="email"
                 name="email"
                 type="email"
                 placeholder="m@example.com"
                 required
-                className="bg-white/5 border-white/20 placeholder:text-gray-400 text-white"
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-300">Password</Label>
-                <Input id="password" name="password" type="password" required className="bg-white/5 border-white/20 placeholder:text-gray-400 text-white"/>
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" name="password" type="password" required />
             </div>
             {state?.error && (
                 <Alert variant="destructive">
