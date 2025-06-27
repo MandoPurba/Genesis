@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('https://cwiiattkbjfbntuqahzd.supabase.co/storage/v1/object/public/assets/bacground.jpg')" }}
+        style={{ backgroundImage: "url('https://cwiiattkbjfbntuqahzd.supabase.co/storage/v1/object/sign/assets/bacground.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8yNzBjNzBhOS1mMTNiLTQwMTgtOGZkYS03Y2RjNTY2MzA2YzciLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJhc3NldHMvYmFjZ3JvdW5kLmpwZyIsImlhdCI6MTc1MTAxNTk1MiwiZXhwIjozMzI4NzAxNTk1Mn0.2pc4BJlJODQ71WVzqHW316EAlSRuXJ2vQv7RKhLCcpI')" }}
       />
       
       {/* Layout Grid */}
