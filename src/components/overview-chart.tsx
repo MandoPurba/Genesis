@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 const chartConfig = {
   income: {
@@ -36,8 +37,11 @@ type OverviewChartProps = {
 }
 
 export function OverviewChart({ data, range }: OverviewChartProps) {
+  const { isPrivacyMode } = usePrivacy()
+
   // Y-axis tick formatter
   const formatYAxisTick = (tick: number) => {
+    if (isPrivacyMode) return '***';
     if (tick >= 1000000) {
       return `Rp${tick / 1000000}M`
     }
@@ -129,7 +133,7 @@ export function OverviewChart({ data, range }: OverviewChartProps) {
                   formatter={(value, name) => (
                     <div className="flex items-center justify-between w-full min-w-[120px]">
                       <span>{name === 'income' ? 'Income' : 'Expense'}</span>
-                      <span className="ml-4 font-semibold">{formatCurrency(Number(value))}</span>
+                      <span className="ml-4 font-semibold">{formatCurrency(Number(value), isPrivacyMode)}</span>
                     </div>
                   )}
                   itemStyle={{width: '100%'}}

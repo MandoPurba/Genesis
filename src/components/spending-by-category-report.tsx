@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
 import { formatCurrency } from "@/lib/utils"
+import { usePrivacy } from "@/contexts/privacy-context"
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -37,6 +38,8 @@ type ReportProps = {
 }
 
 export function SpendingByCategoryReport({ data, categories, spendingPeriod, period, range }: ReportProps) {
+  const { isPrivacyMode } = usePrivacy();
+  
   const chartConfig = React.useMemo(() => {
     const config: ChartConfig = {};
     categories.forEach((category, index) => {
@@ -51,6 +54,7 @@ export function SpendingByCategoryReport({ data, categories, spendingPeriod, per
   const hasData = categories.length > 0 && data.some(d => categories.some(cat => (d[cat] as number) > 0));
 
   const formatYAxisTick = (tick: number) => {
+    if (isPrivacyMode) return "***";
     if (Math.abs(tick) >= 1000000) return `Rp${(tick / 1000000).toFixed(0)}M`
     if (Math.abs(tick) >= 1000) return `Rp${(tick / 1000).toFixed(0)}K`
     return formatCurrency(tick)
@@ -89,7 +93,7 @@ export function SpendingByCategoryReport({ data, categories, spendingPeriod, per
                                 <div className="w-2.5 h-2.5 rounded-full" style={{backgroundColor: chartConfig[name as string]?.color}}></div>
                                 <div className="flex justify-between flex-1">
                                     <span>{name}</span>
-                                    <span className="ml-4 font-bold">{formatCurrency(Number(value))}</span>
+                                    <span className="ml-4 font-bold">{formatCurrency(Number(value), isPrivacyMode)}</span>
                                 </div>
                            </div>
                         )}
