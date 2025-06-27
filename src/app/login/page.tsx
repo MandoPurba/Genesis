@@ -36,15 +36,15 @@ export default async function LoginPage({ searchParams }: { searchParams: { view
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1572023547329-904526555452?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}
+        style={{ backgroundImage: "url('https://<ID_PROYEK_ANDA>.supabase.co/storage/v1/object/public/assets/<NAMA_FILE_GAMBAR_ANDA.png>')" }}
       />
       
       {/* Layout Grid */}
       <div className="relative z-10 grid min-h-screen grid-cols-1 md:grid-cols-5">
         
         {/* Left Panel: Form (takes 2/5 of the width on md screens) */}
-        <div className="col-span-1 md:col-span-2">
-          <div className="h-full w-full flex flex-col items-center justify-center bg-black/30 shadow-2xl backdrop-blur-sm">
+        <div className="col-span-1 md:col-span-2 flex items-center justify-center">
+          <div className="h-full w-full flex flex-col items-center justify-center bg-black/60 shadow-2xl backdrop-blur-sm">
             <div className="w-full max-w-sm p-6">
               <CardHeader className="text-center p-0 mb-6">
                 <CardTitle className="text-3xl font-bold tracking-tight text-white">{isSignUpView ? 'Create Account' : 'Welcome Back'}</CardTitle>
