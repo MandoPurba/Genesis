@@ -6,10 +6,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
-import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale, PiggyBank } from "lucide-react"
+import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale, PiggyBank, Activity, Percent, List, Trophy, Icon } from "lucide-react"
 import { redirect } from "next/navigation"
 import { OverviewChart } from "@/components/overview-chart"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, IconForCategory } from "@/lib/utils"
 import { RightColumnTabs } from "@/components/right-column-tabs"
 
 // Helper function to get start and end of a month
@@ -168,7 +168,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   }
 
   // --- Data for Right Column ---
-  const recentTransactions = transactions.slice(0, 7);
+  const recentTransactions = transactions.slice(0, 5);
 
   const categoryExpenses = currentMonthTransactions
     .filter(t => t.type === 'expense')
@@ -182,9 +182,16 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       .map(([category, total]) => ({ category, total }))
       .sort((a, b) => b.total - a.total);
 
+  // --- New Analytics Cards Data ---
+  const averageDailySpend = currentTotals.expense > 0 ? currentTotals.expense / now.getDate() : 0;
+  const savingsRate = currentTotals.income > 0 ? (netBalance / currentTotals.income) * 100 : 0;
+  const totalTransactionsThisMonth = currentMonthTransactions.length;
+  const topSpendingCategory = categoryExpenseData.length > 0 ? categoryExpenseData[0] : null;
+
+
   return (
-    <div className="flex-1 flex flex-col gap-4">
-      {/* Top Row: Stat Cards */}
+    <div className="space-y-4">
+      {/* Top Row: Main Stat Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Income */}
         <Card>
@@ -224,7 +231,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
           </CardContent>
         </Card>
         
-        {/* NEW: Total Net Worth */}
+        {/* Total Net Worth */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total Net Worth</CardTitle>
@@ -239,8 +246,64 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         </Card>
       </div>
 
+      {/* Second Row: New Analytics Cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Avg. Daily Spend</CardTitle>
+                <Activity className="w-5 h-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(averageDailySpend)}</div>
+                <p className="text-xs text-muted-foreground">Average daily expense this month.</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Savings Rate</CardTitle>
+                <Percent className="w-5 h-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{savingsRate.toFixed(1)}%</div>
+                <p className="text-xs text-muted-foreground">Percentage of income saved.</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Transactions</CardTitle>
+                <List className="w-5 h-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{totalTransactionsThisMonth}</div>
+                <p className="text-xs text-muted-foreground">Total transactions this month.</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Top Expense</CardTitle>
+                <Trophy className="w-5 h-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                {topSpendingCategory ? (
+                    <>
+                        <div className="text-2xl font-bold">{topSpendingCategory.category}</div>
+                        <p className="text-xs text-muted-foreground">
+                            <span className="font-semibold">{formatCurrency(topSpendingCategory.total)}</span> spent this month.
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <div className="text-2xl font-bold">-</div>
+                        <p className="text-xs text-muted-foreground">No expenses this month.</p>
+                    </>
+                )}
+            </CardContent>
+        </Card>
+      </div>
+
+
       {/* Bottom Row: Charts & Other Info */}
-      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-3 overflow-hidden min-h-0">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Main Chart */}
         <div className="lg:col-span-2">
           <OverviewChart data={overviewChartData} range={range} />
@@ -251,7 +314,6 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             <RightColumnTabs 
               categoryData={categoryExpenseData} 
               transactions={recentTransactions}
-              hasMoreTransactions={transactions.length > 7}
             />
         </div>
       </div>

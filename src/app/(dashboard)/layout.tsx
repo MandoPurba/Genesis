@@ -95,7 +95,7 @@ export default async function DashboardLayout({
                   </div>
               </header>
 
-              <div className="grid grid-cols-[auto_1fr] gap-8 overflow-hidden p-8 pt-6">
+              <div className="grid grid-cols-[auto_1fr] gap-8 p-8 pt-6 overflow-y-hidden">
                 <Sidebar side="left" variant="floating" collapsible="icon" className="z-40">
                   <SidebarContent className="pt-2">
                     <MainNav />
@@ -105,7 +105,7 @@ export default async function DashboardLayout({
                   </SidebarFooter>
                 </Sidebar>
 
-                <main className="overflow-hidden flex">
+                <main className="overflow-y-auto">
                   {children}
                 </main>
             </div>

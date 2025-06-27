@@ -1,10 +1,8 @@
 
 "use client"
 
-import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { formatCurrency, IconForCategory } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 
 type Transaction = {
     id: number;
@@ -17,9 +15,9 @@ type Transaction = {
     } | null;
 }
 
-export function RecentTransactions({ transactions, hasMore }: { transactions: Transaction[], hasMore: boolean }) {
+export function RecentTransactions({ transactions }: { transactions: Transaction[] }) {
     return (
-        <div>
+        <div className="p-6 pt-0">
             {transactions.length > 0 ? (
                 <div className="space-y-6">
                     {transactions.map((transaction) => (
@@ -53,16 +51,6 @@ export function RecentTransactions({ transactions, hasMore }: { transactions: Tr
                             </div>
                         </div>
                     ))}
-                    {hasMore && (
-                        <div className="pt-2 text-center">
-                            <Button asChild variant="link" className="text-sm text-muted-foreground">
-                                <Link href="/transactions">
-                                    View More
-                                    <ArrowRight className="ml-1 h-4 w-4" />
-                                </Link>
-                            </Button>
-                        </div>
-                    )}
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center h-full text-center rounded-lg bg-muted/50 p-4">
