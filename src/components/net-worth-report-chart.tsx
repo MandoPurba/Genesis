@@ -39,6 +39,7 @@ type NetWorthReportChartProps = {
   range: '1y' | '5y' | 'all';
   period: 'this_year' | 'last_year';
   spendingPeriod: 'this_year' | 'last_year';
+  trend: 'up' | 'down' | 'same';
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -64,7 +65,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 
-export function NetWorthReportChart({ data, range, period, spendingPeriod }: NetWorthReportChartProps) {
+export function NetWorthReportChart({ data, range, period, spendingPeriod, trend }: NetWorthReportChartProps) {
 
   const formatYAxisTick = (tick: number) => {
     if (Math.abs(tick) >= 1000000) return `Rp${(tick / 1000000).toFixed(1)}M`
@@ -78,29 +79,15 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
         year: 'numeric'
     });
   }
+  
+  const trendColor = React.useMemo(() => {
+    return trend === 'up'
+      ? chartConfig.positive.color
+      : trend === 'down'
+      ? chartConfig.negative.color
+      : chartConfig.neutral.color;
+  }, [trend]);
 
-  const gradientStops = React.useMemo(() => {
-    if (data.length < 2) return [];
-    
-    const stops = [];
-    for(let i = 1; i < data.length; i++) {
-        const prev = data[i-1];
-        const curr = data[i];
-
-        const prevOffset = `${((i - 1) / (data.length - 1)) * 100}%`;
-        const currOffset = `${(i / (data.length - 1)) * 100}%`;
-        
-        const prevColor = i === 1 
-          ? (curr.netWorth > prev.netWorth ? chartConfig.positive.color : curr.netWorth < prev.netWorth ? chartConfig.negative.color : chartConfig.neutral.color)
-          : (prev.netWorth > data[i-2].netWorth ? chartConfig.positive.color : prev.netWorth < data[i-2].netWorth ? chartConfig.negative.color : chartConfig.neutral.color)
-        
-        const currColor = curr.netWorth > prev.netWorth ? chartConfig.positive.color : curr.netWorth < prev.netWorth ? chartConfig.negative.color : chartConfig.neutral.color;
-
-        stops.push(<stop key={`stop-prev-${i}`} offset={prevOffset} stopColor={prevColor} />);
-        stops.push(<stop key={`stop-curr-${i}`} offset={currOffset} stopColor={currColor} />);
-    }
-    return stops;
-  }, [data]);
 
   return (
     <Card>
@@ -130,8 +117,9 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
                     margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
                 >
                     <defs>
-                        <linearGradient id="color-gradient" x1="0" y1="0" x2="1" y2="0">
-                            {gradientStops}
+                        <linearGradient id="fill-gradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={trendColor} stopOpacity={0.8} />
+                            <stop offset="95%" stopColor={trendColor} stopOpacity={0.1} />
                         </linearGradient>
                     </defs>
                     <CartesianGrid vertical={false} />
@@ -158,9 +146,8 @@ export function NetWorthReportChart({ data, range, period, spendingPeriod }: Net
                     <Area 
                       dataKey="netWorth" 
                       type="monotone" 
-                      stroke="url(#color-gradient)"
-                      fill="url(#color-gradient)"
-                      fillOpacity={0.4}
+                      stroke={trendColor}
+                      fill="url(#fill-gradient)"
                       strokeWidth={2} 
                     />
                 </AreaChart>

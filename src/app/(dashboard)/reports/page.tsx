@@ -44,19 +44,22 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     let currentNetWorth = 0;
     
     if (transactions.length > 0) {
-        let lastMonthKey = new Date(transactions[0].date).toISOString().slice(0, 7);
+        let lastDate = new Date(transactions[0].date)
+        lastDate.setUTCDate(1)
+        lastDate = new Date(lastDate.toISOString().slice(0,7) + '-01T00:00:00Z')
+        lastDate.setUTCMonth(lastDate.getUTCMonth() - 1);
 
         transactions.forEach(t => {
-            const monthKey = new Date(t.date).toISOString().slice(0, 7);
-            
+            const transactionDate = new Date(t.date);
+
             // Fill in any gaps for months with no transactions
-            if (monthKey !== lastMonthKey) {
-                let tempDate = new Date(`${lastMonthKey}-02T00:00:00Z`); // Use day 2 to avoid timezone issues
-                tempDate.setUTCMonth(tempDate.getUTCMonth() + 1);
-                while(tempDate.toISOString().slice(0,7) < monthKey) {
-                    monthlyNetWorthMap.set(tempDate.toISOString().slice(0,7), currentNetWorth);
-                    tempDate.setUTCMonth(tempDate.getUTCMonth() + 1);
-                }
+            while (
+                (transactionDate.getUTCFullYear() > lastDate.getUTCFullYear()) ||
+                (transactionDate.getUTCFullYear() === lastDate.getUTCFullYear() && transactionDate.getUTCMonth() > lastDate.getUTCMonth())
+            ) {
+                lastDate.setUTCMonth(lastDate.getUTCMonth() + 1);
+                const monthKey = lastDate.toISOString().slice(0, 7);
+                monthlyNetWorthMap.set(monthKey, currentNetWorth);
             }
             
             if (t.type === 'income') {
@@ -66,17 +69,17 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
             }
             // Transfers between own accounts don't affect net worth
             
+            const monthKey = transactionDate.toISOString().slice(0, 7);
             monthlyNetWorthMap.set(monthKey, currentNetWorth);
-            lastMonthKey = monthKey;
         });
     }
 
     const netWorthData = Array.from(monthlyNetWorthMap.entries()).map(([monthKey, data]) => {
         return {
-            date: new Date(`${monthKey}-01T12:00:00Z`).toISOString(), // Use a consistent time for sorting
+            date: new Date(`${monthKey}-01T12:00:00Z`),
             netWorth: data,
         };
-    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }).sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const validRanges = ['1y', '5y', 'all'] as const;
     type Range = typeof validRanges[number];
@@ -91,15 +94,31 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
             rangeStart.setFullYear(today.getFullYear() - 5);
         }
         
-        const anchorIndex = netWorthData.findIndex(d => new Date(d.date) >= rangeStart);
+        const anchorIndex = netWorthData.findIndex(d => d.date >= rangeStart);
+        // Include one data point before the range starts to anchor the chart correctly
         const startIndex = anchorIndex > 0 ? anchorIndex - 1 : anchorIndex;
         
         if (startIndex !== -1) {
             filteredNetWorthData = netWorthData.slice(startIndex);
         } else {
+            // If no data is in range, show the very last known data point
             filteredNetWorthData = netWorthData.length > 0 ? [netWorthData[netWorthData.length - 1]] : [];
         }
     }
+    
+    // Determine the overall trend for the chart color
+    let finalTrend: 'up' | 'down' | 'same' = 'same';
+    if (filteredNetWorthData.length >= 2) {
+        const last = filteredNetWorthData[filteredNetWorthData.length - 1].netWorth;
+        const secondLast = filteredNetWorthData[filteredNetWorthData.length - 2].netWorth;
+        if (last > secondLast) {
+            finalTrend = 'up';
+        } else if (last < secondLast) {
+            finalTrend = 'down';
+        }
+    }
+
+    const chartDataForNetWorth = filteredNetWorthData.map(d => ({ ...d, date: d.date.toISOString() }));
     
     // --- 2. & 3. Calculations for other reports ---
     const validPeriods = ['this_year', 'last_year'] as const;
@@ -168,7 +187,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-                <NetWorthReportChart data={filteredNetWorthData} range={range} period={period} spendingPeriod={spendingPeriod} />
+                <NetWorthReportChart data={chartDataForNetWorth} range={range} period={period} spendingPeriod={spendingPeriod} trend={finalTrend} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
