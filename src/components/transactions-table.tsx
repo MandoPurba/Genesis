@@ -29,6 +29,12 @@ export function TransactionsTable({ initialTransactions }: { initialTransactions
   const [isLoading, setIsLoading] = useState(false)
   const loaderRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    setTransactions(initialTransactions);
+    setPage(1);
+    setHasMore(initialTransactions.length === TRANSACTIONS_PER_PAGE);
+  }, [initialTransactions]);
+
   const loadMoreTransactions = useCallback(async () => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
