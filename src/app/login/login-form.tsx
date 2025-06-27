@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useActionState } from "react"
@@ -61,7 +62,7 @@ export function LoginForm() {
               type="email"
               placeholder="Email"
               required
-              className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30"
+              className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30 focus-visible:ring-0 focus-visible:ring-offset-0"
             />
             <Input 
               id="password" 
@@ -69,7 +70,7 @@ export function LoginForm() {
               type="password" 
               placeholder="Password"
               required 
-              className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30" 
+              className="bg-black/20 border-white/30 text-white placeholder:text-white/70 focus:bg-black/30 focus-visible:ring-0 focus-visible:ring-offset-0" 
             />
             {state?.error && (
                 <Alert variant="destructive">
