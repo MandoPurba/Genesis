@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -222,7 +223,7 @@ const Sidebar = React.forwardRef<
           "w-[--sidebar-width-icon]",
           "data-[state=expanded]:w-[--sidebar-width]",
           "flex flex-col bg-sidebar/80 dark:bg-sidebar/50 backdrop-blur-xl border border-white/20 shadow",
-          "rounded-full",
+          "rounded-lg",
           className
         )}
         data-state={state}

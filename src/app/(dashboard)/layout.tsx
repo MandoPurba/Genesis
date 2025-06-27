@@ -51,7 +51,7 @@ export default async function DashboardLayout({
   return (
       <MobileBlocker>
         <SidebarProvider>
-          <div className="flex h-screen w-full flex-col bg-background">
+          <div className="grid h-screen w-full grid-rows-[auto_1fr] bg-background">
               <header className="flex items-center justify-between gap-4 p-8 pb-0">
                   <div className="flex items-center gap-4">
                       <SidebarTrigger className="md:hidden" />
@@ -95,7 +95,7 @@ export default async function DashboardLayout({
                   </div>
               </header>
 
-              <div className="flex flex-1 gap-8 overflow-hidden p-8 pt-6">
+              <div className="grid grid-cols-[auto_1fr] gap-8 overflow-hidden p-8 pt-6">
                 <Sidebar side="left" variant="floating" collapsible="icon" className="z-40">
                   <SidebarContent className="pt-2">
                     <MainNav />
@@ -105,7 +105,7 @@ export default async function DashboardLayout({
                   </SidebarFooter>
                 </Sidebar>
 
-                <main className="flex-1 overflow-hidden">
+                <main className="overflow-hidden">
                   {children}
                 </main>
             </div>
