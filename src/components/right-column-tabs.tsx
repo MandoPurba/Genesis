@@ -1,3 +1,4 @@
+
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -34,7 +35,7 @@ export function RightColumnTabs({ categoryData, transactions }: RightColumnTabsP
                 <TabsContent value="categories" className="flex-1 overflow-hidden p-0 m-0">
                     <CategoryChart data={categoryData} />
                 </TabsContent>
-                <TabsContent value="recent" className="flex-1 overflow-hidden p-6 pt-0 m-0">
+                <TabsContent value="recent" className="flex-1 overflow-hidden p-0 m-0">
                     <RecentTransactions transactions={transactions} />
                 </TabsContent>
             </Tabs>

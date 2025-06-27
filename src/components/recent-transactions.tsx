@@ -16,7 +16,7 @@ type Transaction = {
 
 export function RecentTransactions({ transactions }: { transactions: Transaction[] }) {
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full p-6 pt-0">
             {transactions.length > 0 ? (
                 <div className="space-y-6 overflow-auto pr-2 flex-1">
                     {transactions.map((transaction) => (
