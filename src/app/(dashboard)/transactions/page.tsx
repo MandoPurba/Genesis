@@ -1,10 +1,10 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { fetchTransactions } from "./actions";
 import { TransactionsTable } from "@/components/transactions-table";
 import { AddTransactionSheet } from "@/components/add-transaction-sheet";
 import { redirect } from "next/navigation";
-import { formatCurrency } from "@/lib/utils";
 
 export type BudgetInfo = {
   [categoryId: number]: {
@@ -25,17 +25,45 @@ export default async function TransactionsPage() {
   }
 
   // Fetch initial data for the table and the form, ensuring it's scoped to the user
-  const [initialTransactions, categoriesData, accountsData] = await Promise.all([
+  const [initialTransactions, categoriesData, accountsData, allTransactionsResult] = await Promise.all([
     fetchTransactions(0),
     supabase.from('categories').select('*').eq('user_id', user.id).order('name'),
-    supabase.from('accounts').select('id, name').eq('user_id', user.id).order('name')
+    supabase.from('accounts').select('id, name').eq('user_id', user.id).order('name'),
+    supabase.from('transactions').select('account_id, type, amount').eq('user_id', user.id) // Fetch all transactions for balance calculation
   ]);
 
   const categories = categoriesData.data || [];
-  const accounts = accountsData.data || [];
+  const accountsRaw = accountsData.data || [];
+  const allTransactions = allTransactionsResult.data || [];
+
+  if (allTransactionsResult.error) {
+    console.error("Error fetching transactions for balance calculation:", allTransactionsResult.error);
+    // You might want to return an error view here
+  }
+
+  // --- Calculate Account Balances ---
+  const accountBalances = new Map<number, number>();
+  accountsRaw.forEach(acc => {
+    accountBalances.set(acc.id, 0);
+  });
+
+  allTransactions.forEach(t => {
+    if (t.account_id) {
+      const currentBalance = accountBalances.get(t.account_id) || 0;
+      const adjustment = t.type === 'income' ? t.amount : -t.amount;
+      accountBalances.set(t.account_id, currentBalance + adjustment);
+    }
+  });
+
+  const accounts = accountsRaw.map(acc => ({
+    id: acc.id,
+    name: acc.name,
+    balance: accountBalances.get(acc.id) || 0,
+  }));
+  // --- End Account Balance Calculation ---
 
 
-  // --- New logic to get budget and spending data ---
+  // --- Logic to get budget and spending data for the current month ---
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -81,7 +109,7 @@ export default async function TransactionsPage() {
     }
     return acc;
   }, {} as BudgetInfo);
-  // --- End new logic ---
+  // --- End budget logic ---
 
 
   return (

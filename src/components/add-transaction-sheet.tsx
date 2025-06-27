@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useActionState, useEffect, useState } from "react"
@@ -25,13 +26,13 @@ import { PlusCircle, AlertCircle } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 
 type Category = { id: number; name: string; type: 'income' | 'expense' }
-type Account = { id: number; name: string; }
+type Account = { id: number; name: string; balance: number; }
 type BudgetInfo = { [categoryId: number]: { budget: number; spent: number; } }
 
-function SubmitButton() {
+function SubmitButton({ disabled }: { disabled?: boolean }) {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" disabled={pending} className="w-full">
+    <Button type="submit" disabled={pending || disabled} className="w-full">
       {pending ? "Adding..." : "Add Transaction"}
     </Button>
   )
@@ -48,6 +49,8 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
   const [key, setKey] = useState(Date.now()); // Used to reset form
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>()
   const [overBudgetWarning, setOverBudgetWarning] = useState<string | null>(null)
+  const [selectedAccountId, setSelectedAccountId] = useState<string | undefined>()
+  const [insufficientBalanceWarning, setInsufficientBalanceWarning] = useState<string | null>(null)
 
   const filteredCategories = categories.filter(c => c.type === transactionType)
 
@@ -61,6 +64,8 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
       setAmountValue('')
       setSelectedCategoryId(undefined)
       setOverBudgetWarning(null)
+      setSelectedAccountId(undefined)
+      setInsufficientBalanceWarning(null)
       setKey(Date.now())
     } else if (state?.error) {
       toast({ title: "Error", description: state.error, variant: "destructive" })
@@ -72,6 +77,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
     setSelectedCategoryId(undefined)
   }, [transactionType])
 
+  // Effect for budget warning
   useEffect(() => {
     if (transactionType === 'expense' && selectedCategoryId && amountValue) {
       const categoryIdNum = Number(selectedCategoryId)
@@ -95,6 +101,23 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
       setOverBudgetWarning(null)
     }
   }, [selectedCategoryId, amountValue, transactionType, budgetInfo])
+
+  // Effect for insufficient balance warning
+  useEffect(() => {
+    if (transactionType === 'expense' && selectedAccountId && amountValue) {
+        const accountIdNum = Number(selectedAccountId);
+        const amountNum = Number(amountValue) || 0;
+        const selectedAccount = accounts.find(acc => acc.id === accountIdNum);
+
+        if (selectedAccount && amountNum > selectedAccount.balance) {
+            setInsufficientBalanceWarning(`Transaction exceeds account balance of ${formatCurrency(selectedAccount.balance)}.`);
+        } else {
+            setInsufficientBalanceWarning(null);
+        }
+    } else {
+        setInsufficientBalanceWarning(null);
+    }
+  }, [selectedAccountId, amountValue, transactionType, accounts]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^0-9]/g, '');
@@ -161,13 +184,15 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
 
             <div>
               <Label htmlFor="accountId">Account</Label>
-              <Select name="accountId" required>
+              <Select name="accountId" required value={selectedAccountId} onValueChange={setSelectedAccountId}>
                 <SelectTrigger id="accountId">
                   <SelectValue placeholder="Select an account" />
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map(account => (
-                    <SelectItem key={account.id} value={account.id.toString()}>{account.name}</SelectItem>
+                    <SelectItem key={account.id} value={account.id.toString()}>
+                      {account.name} ({formatCurrency(account.balance)})
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -199,6 +224,14 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
               <Textarea id="description" name="description" placeholder="e.g., Groceries from the market" />
               {state?.errors?.description && <p className="text-destructive text-sm mt-1">{state.errors.description[0]}</p>}
             </div>
+            
+            {insufficientBalanceWarning && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Insufficient Balance</AlertTitle>
+                <AlertDescription>{insufficientBalanceWarning}</AlertDescription>
+              </Alert>
+            )}
 
             {overBudgetWarning && (
               <Alert variant="destructive">
@@ -210,7 +243,7 @@ export function AddTransactionSheet({ categories, accounts, budgetInfo }: { cate
 
           </div>
           <SheetFooter className="mt-auto pt-4 border-t">
-            <SubmitButton />
+            <SubmitButton disabled={!!insufficientBalanceWarning} />
           </SheetFooter>
         </form>
       </SheetContent>
