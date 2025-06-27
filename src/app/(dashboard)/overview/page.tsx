@@ -1,3 +1,4 @@
+
 import {
   Card,
   CardContent,
@@ -5,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
-import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale } from "lucide-react"
+import { TrendingUp, TrendingDown, DollarSign, Wallet, Scale, PiggyBank } from "lucide-react"
 import { redirect } from "next/navigation"
 import { OverviewChart } from "@/components/overview-chart"
 import { formatCurrency } from "@/lib/utils"
@@ -15,8 +16,8 @@ import { RightColumnTabs } from "@/components/right-column-tabs"
 const getMonthDateRange = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    const firstDay = new Date(year, month, 1, 0, 0, 0, 0);
-    const lastDay = new Date(year, month + 1, 0, 23, 59, 59, 999);
+    const firstDay = new Date(Date.UTC(year, month, 1));
+    const lastDay = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
     return {
         start: firstDay.toISOString(),
         end: lastDay.toISOString(),
@@ -26,14 +27,13 @@ const getMonthDateRange = (date: Date) => {
 // Helper function to get start and end of a year
 const getYearDateRange = (date: Date) => {
     const year = date.getFullYear();
-    const firstDay = new Date(year, 0, 1, 0, 0, 0, 0);
-    const lastDay = new Date(year, 11, 31, 23, 59, 59, 999);
+    const firstDay = new Date(Date.UTC(year, 0, 1));
+    const lastDay = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
     return {
         start: firstDay.toISOString(),
         end: lastDay.toISOString(),
     };
 }
-
 
 export default async function OverviewPage({ searchParams }: { searchParams: { range?: string } }) {
   const supabase = createClient();
@@ -45,54 +45,50 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   if (!user) {
       redirect('/login');
   }
-  
-  const range = searchParams.range === 'yearly' ? 'yearly' : 'monthly';
+
+  // --- Single, consolidated data fetch for all transaction-related data ---
+  const { data: allTransactions, error: allTransactionsError } = await supabase
+    .from('transactions')
+    .select('id, date, type, amount, description, categories ( name )')
+    .eq('user_id', user.id)
+    .order('date', { ascending: false });
+
+  if (allTransactionsError) {
+    console.error("Error fetching transactions:", allTransactionsError);
+    return <div>Error loading data. Please check the console for details.</div>
+  }
+
+  const transactions = allTransactions || [];
   const now = new Date();
 
-  // Data for Stat Cards (always this month)
+  // --- Derivations for Stat Cards ---
+  const totalNetWorth = transactions.reduce((acc, t) => {
+    return t.type === 'income' ? acc + t.amount : acc - t.amount;
+  }, 0);
+
   const currentMonthRange = getMonthDateRange(now);
-  
-  const { data: currentMonthTransactions, error: currentMonthError } = await supabase
-      .from('transactions')
-      .select('amount, type, categories ( name )')
-      .eq('user_id', user.id)
-      .gte('date', currentMonthRange.start)
-      .lte('date', currentMonthRange.end)
+  const currentMonthTransactions = transactions.filter(t => {
+      const tDate = new Date(t.date);
+      return tDate.toISOString() >= currentMonthRange.start && tDate.toISOString() <= currentMonthRange.end;
+  });
 
-  if (currentMonthError) {
-      console.error("Error fetching current month transactions:", currentMonthError);
-      return <div>Error loading data.</div>
-  }
-
-  const lastMonthDate = new Date();
-  lastMonthDate.setMonth(now.getMonth() - 1);
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthRange = getMonthDateRange(lastMonthDate);
+  const lastMonthTransactions = transactions.filter(t => {
+      const tDate = new Date(t.date);
+      return tDate.toISOString() >= lastMonthRange.start && tDate.toISOString() <= lastMonthRange.end;
+  });
 
-  const { data: lastMonthTransactions, error: lastMonthError } = await supabase
-      .from('transactions')
-      .select('amount, type')
-      .eq('user_id', user.id)
-      .gte('date', lastMonthRange.start)
-      .lte('date', lastMonthRange.end);
-  
-  if (lastMonthError) {
-      console.error("Error fetching last month transactions:", lastMonthError);
-      return <div>Error loading data.</div>
-  }
-
-  const calculateTotals = (trans: { amount: number; type: string; }[]) => {
+  const calculateTotals = (trans: typeof transactions) => {
       return trans.reduce((acc, t) => {
-          if (t.type === 'income') {
-              acc.income += t.amount;
-          } else if (t.type === 'expense') {
-              acc.expense += t.amount;
-          }
+          if (t.type === 'income') acc.income += t.amount;
+          else if (t.type === 'expense') acc.expense += t.amount;
           return acc;
       }, { income: 0, expense: 0 });
   };
-
-  const currentTotals = calculateTotals(currentMonthTransactions || []);
-  const lastMonthTotals = calculateTotals(lastMonthTransactions || []);
+  
+  const currentTotals = calculateTotals(currentMonthTransactions);
+  const lastMonthTotals = calculateTotals(lastMonthTransactions);
 
   const incomePercentageChange =
       lastMonthTotals.income > 0
@@ -110,14 +106,11 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
     if (!isFinite(change)) {
         return <p className="text-xs text-muted-foreground">No data last month</p>;
     }
-
     const isPositive = change >= 0;
     const colorClass = positiveIsGood
         ? (isPositive ? 'text-success' : 'text-destructive')
         : (isPositive ? 'text-destructive' : 'text-success');
-
     const TrendIcon = isPositive ? TrendingUp : TrendingDown;
-
     return (
         <p className={`flex items-center text-xs ${colorClass}`}>
             <TrendIcon className="w-4 h-4 mr-1" />
@@ -126,21 +119,11 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
     );
   };
   
-  // Data for Main Overview Chart
+  // --- Data for Main Overview Chart ---
+  const range = searchParams.range === 'yearly' ? 'yearly' : 'monthly';
   let overviewChartData: { date: string; income: number; expense: number }[] = [];
 
   if (range === 'monthly') {
-      const dateRange = getMonthDateRange(now);
-      const { data: transactions, error } = await supabase
-        .from('transactions')
-        .select('amount, type, date')
-        .eq('user_id', user.id)
-        .gte('date', dateRange.start)
-        .lte('date', dateRange.end)
-        .order('date', { ascending: true });
-
-      if (error) console.error("Error fetching chart transactions:", error);
-      
       const dailyData = new Map<string, { income: number; expense: number }>();
       const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
@@ -150,7 +133,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         dailyData.set(formattedDate, { income: 0, expense: 0 });
       }
 
-      (transactions || []).forEach(t => {
+      currentMonthTransactions.forEach(t => {
           const transactionDate = new Date(t.date);
           const formattedDate = transactionDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
           const dayEntry = dailyData.get(formattedDate);
@@ -161,16 +144,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       });
       overviewChartData = Array.from(dailyData.entries()).map(([date, totals]) => ({ date, ...totals }));
   } else { // yearly
-      const dateRange = getYearDateRange(now);
-      const { data: transactions, error } = await supabase
-        .from('transactions')
-        .select('amount, type, date')
-        .eq('user_id', user.id)
-        .gte('date', dateRange.start)
-        .lte('date', dateRange.end)
-        .order('date', { ascending: true });
-
-      if (error) console.error("Error fetching chart transactions:", error);
+      const yearlyTransactions = transactions.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
       
       const monthlyData = new Map<string, { income: number; expense: number }>();
       const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -179,7 +153,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         monthlyData.set(monthName, { income: 0, expense: 0 });
       }
 
-      (transactions || []).forEach(t => {
+      yearlyTransactions.forEach(t => {
           const transactionDate = new Date(t.date);
           const monthName = monthNames[transactionDate.getMonth()];
           const monthEntry = monthlyData.get(monthName);
@@ -191,19 +165,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       overviewChartData = Array.from(monthlyData.entries()).map(([date, totals]) => ({ date, ...totals }));
   }
 
-  // Data for Right Column (always this month)
-  const { data: recentTransactions, error: recentTransactionsError } = await supabase
-    .from('transactions')
-    .select('id, date, type, amount, description, categories ( name )')
-    .eq('user_id', user.id)
-    .order('date', { ascending: false })
-    .limit(50);
+  // --- Data for Right Column ---
+  const recentTransactions = transactions.slice(0, 50);
 
-  if (recentTransactionsError) {
-      console.error("Error fetching recent transactions:", recentTransactionsError);
-  }
-
-  const categoryExpenses = (currentMonthTransactions || [])
+  const categoryExpenses = currentMonthTransactions
     .filter(t => t.type === 'expense')
     .reduce((acc, t) => {
         const categoryName = t.categories?.name || 'Uncategorized';
@@ -218,11 +183,11 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Top Row: Stat Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Income */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+            <CardTitle className="text-sm font-medium">Income (This Month)</CardTitle>
             <DollarSign className="w-5 h-5 text-success" />
           </CardHeader>
           <CardContent>
@@ -234,7 +199,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         {/* Total Expenses */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+            <CardTitle className="text-sm font-medium">Expenses (This Month)</CardTitle>
             <Wallet className="w-5 h-5 text-destructive" />
           </CardHeader>
           <CardContent>
@@ -246,14 +211,28 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         {/* Net Balance */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
+            <CardTitle className="text-sm font-medium">Net (This Month)</CardTitle>
             <Scale className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${netBalance >= 0 ? 'text-success' : 'text-destructive'}`}>
                 {formatCurrency(netBalance)}
             </div>
-            <p className="text-xs text-muted-foreground">This month's standing.</p>
+            <p className="text-xs text-muted-foreground">This month's income minus expenses.</p>
+          </CardContent>
+        </Card>
+        
+        {/* NEW: Total Net Worth */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Net Worth</CardTitle>
+            <PiggyBank className="w-5 h-5 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${totalNetWorth >= 0 ? 'text-foreground' : 'text-destructive'}`}>
+                {formatCurrency(totalNetWorth)}
+            </div>
+            <p className="text-xs text-muted-foreground">Sum of all your account balances.</p>
           </CardContent>
         </Card>
       </div>
@@ -267,7 +246,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         <div className="lg:col-span-1">
             <RightColumnTabs 
               categoryData={categoryExpenseData} 
-              transactions={recentTransactions || []}
+              transactions={recentTransactions}
             />
         </div>
       </div>
