@@ -28,6 +28,7 @@ const chartConfig = {
 type NetWorthReportChartProps = {
   data: { date: string; netWorth: number; up?: number | null, down?: number | null, stable?: number | null }[];
   range: '1y' | '5y' | 'all';
+  period: 'this_year' | 'last_year';
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -53,7 +54,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 
-export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
+export function NetWorthReportChart({ data, range, period }: NetWorthReportChartProps) {
 
   const formatYAxisTick = (tick: number) => {
     if (Math.abs(tick) >= 1000000) {
@@ -81,13 +82,13 @@ export function NetWorthReportChart({ data, range }: NetWorthReportChartProps) {
           </div>
           <div className="flex items-center gap-2 p-1 bg-muted rounded-md">
             <Button variant={range === '1y' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
-              <Link href="/reports?range=1y" scroll={false}>Last Year</Link>
+              <Link href={`/reports?range=1y&period=${period}`} scroll={false}>Last Year</Link>
             </Button>
             <Button variant={range === '5y' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
-              <Link href="/reports?range=5y" scroll={false}>5 Years</Link>
+              <Link href={`/reports?range=5y&period=${period}`} scroll={false}>5 Years</Link>
             </Button>
             <Button variant={range === 'all' ? 'secondary' : 'ghost'} size="sm" className="h-7" asChild>
-              <Link href="/reports?range=all" scroll={false}>All Time</Link>
+              <Link href={`/reports?range=all&period=${period}`} scroll={false}>All Time</Link>
             </Button>
           </div>
         </CardHeader>

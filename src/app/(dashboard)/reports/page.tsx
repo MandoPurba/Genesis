@@ -78,16 +78,13 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
             if (current.netWorth > prev.netWorth) {
                 prev.up = prev.netWorth;
                 current.up = current.netWorth;
-            }
-            if (current.netWorth < prev.netWorth) {
+            } else if (current.netWorth < prev.netWorth) {
                 prev.down = prev.netWorth;
                 current.down = current.netWorth;
-            }
-            if (current.netWorth === prev.netWorth) {
-                // If stable, continue the previous segment color if it exists, otherwise start a stable segment
-                if(prev.up) { prev.up = prev.netWorth; current.up = current.netWorth }
-                else if (prev.down) { prev.down = prev.netWorth; current.down = current.netWorth }
-                else { prev.stable = prev.netWorth; current.stable = current.netWorth; }
+            } else { // Stable
+                // Set values on both points for a continuous segment
+                prev.stable = prev.netWorth;
+                current.stable = current.netWorth;
             }
         }
     } else if (monthlyPointsWithTrend.length === 1) {
@@ -183,11 +180,11 @@ export default async function ReportsPage({ searchParams }: { searchParams: { ra
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
-                <NetWorthReportChart data={netWorthDataForChart} range={range} />
+                <NetWorthReportChart data={netWorthDataForChart} range={range} period={period} />
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <IncomeVsExpenseReport data={incomeExpenseData} period={period} />
+                <IncomeVsExpenseReport data={incomeExpenseData} period={period} range={range} />
                 <SpendingByCategoryReport 
                     data={spendingByCategoryTrendData} 
                     categories={categoryListForChart}
