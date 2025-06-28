@@ -15,6 +15,8 @@ import Link from "next/link"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function LoginPage({ searchParams }: { searchParams: { view?: string; error?: string } }) {
   const supabase = createClient()
 
