@@ -58,12 +58,27 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
     supabase
       .from('accounts')
       .select('id, name, type')
-      .eq('user_id', user.id),
+      .eq('user_id', user.id)
+        .overrideTypes<Array<{
+            id: number;
+            name: string;
+            type: 'income' | 'expense' | 'transfer';
+        }>>(),
     supabase
       .from('transactions')
       .select('id, date, type, amount, description, account_id, to_account_id, categories(id, name)')
       .eq('user_id', user.id)
-      .order('date', { ascending: false }),
+      .order('date', { ascending: false })
+        .overrideTypes<Array<{
+            id: number;
+            date: string;
+            type: 'income' | 'expense' | 'transfer';
+            amount: number;
+            description?: string;
+            account_id?: number;
+            to_account_id?: number;
+            categories?: { id: number; name: string } | null;
+        }>>()
   ]);
 
   const { data: accountsRaw, error: accountsError } = accountsResult;
@@ -217,7 +232,12 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
     .from('budgets')
     .select('id, amount, categories (id, name)')
     .eq('user_id', user.id)
-    .eq('start_date', currentMonthRange.start.split('T')[0]);
+    .eq('start_date', currentMonthRange.start.split('T')[0])
+      .overrideTypes<Array<{
+        id: number;
+        amount: number;
+        categories?: { id: number; name: string } | null;
+      }>>();
   
   const budgetsWithSpending: BudgetStatusData[] = (budgets || []).map(b => {
     const spent = b.categories ? categoryExpenses[b.categories.name] || 0 : 0;
