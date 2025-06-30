@@ -40,8 +40,9 @@ const getYearDateRange = (date: Date) => {
     };
 }
 
-export default async function OverviewPage({ searchParams }: { searchParams: { range?: string } }) {
+export default async function OverviewPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
   const supabase = createClient();
+  const cookiesState = await cookies();
   if (!supabase) {
     return <div>Supabase not configured.</div>;
   }
@@ -51,7 +52,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       redirect('/login');
   }
 
-  const isPrivacyMode = cookies().get('privacy-mode')?.value === 'true';
+  const isPrivacyMode = cookiesState.get('privacy-mode')?.value === 'true';
 
   // --- Consolidated Data Fetching ---
   const [accountsResult, transactionsResult] = await Promise.all([
@@ -74,10 +75,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
             date: string;
             type: 'income' | 'expense' | 'transfer';
             amount: number;
-            description?: string;
-            account_id?: number;
-            to_account_id?: number;
-            categories?: { id: number; name: string } | null;
+            description: string | null;
+            account_id: number;
+            to_account_id: number;
+            categories: { id: number; name: string } | null;
         }>>()
   ]);
 
@@ -161,8 +162,8 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
   };
   
   // --- Data for Main Overview Chart ---
-  const range = searchParams.range === 'yearly' ? 'yearly' : 'monthly';
-  let overviewChartData: { date: string; income: number; expense: number }[] = [];
+  const range = (await searchParams).range === 'yearly' ? 'yearly' : 'monthly';
+  let overviewChartData: { date: string; income: number; expense: number }[];
 
   if (range === 'monthly') {
       const dailyData = new Map<string, { income: number; expense: number }>();
@@ -263,7 +264,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       .map(([category, total]) => ({ category, total }))
       .sort((a, b) => b.total - a.total);
 
-  // --- Calculate Account Balances for new card ---
+  // --- Calculate Account Balances for a new card ---
   const accountBalances = new Map<number, number>();
   (accountsRaw || []).forEach(acc => {
     accountBalances.set(acc.id, 0);
